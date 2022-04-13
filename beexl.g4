@@ -127,23 +127,28 @@ extras0: pixelFill0
 
 //pending
 
-assignment20: '='   | RGBA
-                    | HEX 
-                    | VECTOR; 
+
+assignment20: '=' |  assignment21;
+assignment21: RGBA | HEX | VECTOR;
 
 pixelFill0: FILL pixelFill1  pixelFill2 ';';
-pixelFill2: | ID
-            | RGBA
-            | HEX;
-pixelFill1: | ID
-            | VECTOR;
+pixelFill2:  ID | RGBA | HEX;
+pixelFill1: ID | VECTOR;
 
-assignment0: ID* assignment20; 
+assignment0: ID assignment20; 
 PRINT: 'print' ';'; 
 print0: PRINT; 
 conditional0: IF '(' hyperExp0 ')' '{' extras0 + '}' ; 
-hyperExp0: ; 
-superExp0: ;
+
+hyperExp0: superExp0 superExp1;
+superExp1: superExp2 | ;
+superExp2: superExp3 hyperExp0;
+superExp3: '&&' | '||';
+
+superExp0: exp0 exp1;
+exp1: exp2 | ;
+exp2: exp3 superExp0;
+exp3: '==' | '<=' | '>=' | '<' | '>';
 
 exp0: term0 term1;
 term1: term2 | ;
@@ -188,13 +193,3 @@ main0: FUNCTION VOID MAIN '(' ')' block0 ;
 body0: FUNCTION+ MAIN;
 functionCall0: ID '(' functionCall1 ')' ',';
 functionCall1: ID | ID ',' functionCall1 ;
-
-
-
-
-
-
-
-
-
-
