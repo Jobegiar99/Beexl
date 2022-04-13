@@ -125,28 +125,69 @@ extras0: pixelFill0
                    | print0
                    | functionCall0;
 
-assignment20: ; //pending
-pixelFill0: ; //pending
-assignment0: ; //pending
-print0: ; //pending
-conditional0: ; //pending
-hyperExp0: ; //pending
-superExp0: ;//pending
-exp0: ;//pending
-term0: ;//pending
-factor0: ; //pending
-cycle0: ; //pending
-vectorOperation0: ; //pending
-vectorAttribute0: ;//pending
-rgbaOperation0: ;//pending
-rgbaAttribute0: ;//pending
-hexOperation0: ;//pending
-hexAttribute0: ;//pending
-block0: ;//pending
-main0: ;//pending
-body0: ;//pending
-functionCall0: ;//pending
+//pending
 
+assignment20: '='   | RGBA
+                    | HEX 
+                    | VECTOR; 
+
+pixelFill0: FILL pixelFill1  pixelFill2 ';';
+pixelFill2: | ID
+            | RGBA
+            | HEX;
+pixelFill1: | ID
+            | VECTOR;
+
+assignment0: ID* assignment20; 
+PRINT: 'print' ';'; 
+print0: PRINT; 
+conditional0: IF '(' hyperExp0 ')' '{' extras0 + '}' ; 
+hyperExp0: ; 
+superExp0: ;
+
+exp0: term0 term1;
+term1: term2 | ;
+term2: term3 exp0;
+term3: '+' | '-';
+
+term0: factor0 factor1;
+factor1: factor2 | ; 
+factor2: factor3 term0;
+factor3: '*' | '/';
+
+
+factor0: ID | '(' superExp0 ')'; 
+cycle0: FROM cycle1 TO cycle1 DO '{' extras0+ '}'; 
+cycle1: VECTOR | colorFormat0;
+
+vectorOperation0: vectorOperation1 exp0 vectorOperation1; 
+vectorOperation1: ID | VECTOR | vectorAttribute0;
+
+vectorAttribute0: ID '.'    | X
+                            | Y;
+
+rgbaOperation0: rgbaOperation1 exp0 rgbaOperation1;
+rgbaOperation1: ID | RGBA | rgbaAttribute0;
+
+rgbaAttribute0: ID '.'  | RED
+                        | GREEN
+                        | BLUE
+                        | ALPHA;
+
+hexOperation0: hexOperation1 exp0 | hexOperation1;
+hexOperation1: ID | HEX | hexAttribute0;
+
+hexAttribute0: ID '.'   | RED
+                        | GREEN
+                        | BLUE;
+block0: '{' block1+ '}';
+block1: VAR | instruction0;
+
+BLOCK: '';
+main0: FUNCTION VOID MAIN '(' ')' block0 ;
+body0: FUNCTION+ MAIN;
+functionCall0: ID '(' functionCall1 ')' ',';
+functionCall1: ID | ID ',' functionCall1 ;
 
 
 
