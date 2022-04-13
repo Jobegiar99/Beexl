@@ -129,67 +129,69 @@ extras0: pixelFill0
 
 
 assignment20: '=' |  assignment21;
-assignment21: RGBA | HEX | VECTOR;
+assignment21: RGBA | HEX | VECTOR; //ya
 
 pixelFill0: FILL pixelFill1  pixelFill2 ';';
 pixelFill2:  ID | RGBA | HEX;
-pixelFill1: ID | VECTOR;
+pixelFill1: ID | VECTOR; //ya
 
-assignment0: ID assignment20; 
-PRINT: 'print' ';'; 
-print0: PRINT; 
-conditional0: IF '(' hyperExp0 ')' '{' extras0 + '}' ; 
+assignment0: ID assignment20 ';'; //ya
+
+PRINT: 'print'; 
+print0: PRINT ';'; //ya
+
+conditional0: IF '(' hyperExp0 ')' '{' extras0+ '}' ; //ya
 
 hyperExp0: superExp0 superExp1;
 superExp1: superExp2 | ;
 superExp2: superExp3 hyperExp0;
-superExp3: '&&' | '||';
+superExp3: '&&' | '||'; //ya
 
 superExp0: exp0 exp1;
 exp1: exp2 | ;
 exp2: exp3 superExp0;
-exp3: '==' | '<=' | '>=' | '<' | '>';
+exp3: '==' | '<=' | '>=' | '<' | '>'; //ya
 
 exp0: term0 term1;
 term1: term2 | ;
 term2: term3 exp0;
-term3: '+' | '-';
+term3: '+' | '-'; //ya
 
 term0: factor0 factor1;
 factor1: factor2 | ; 
 factor2: factor3 term0;
-factor3: '*' | '/';
+factor3: '*' | '/'; //ya
 
 
-factor0: ID | '(' superExp0 ')'; 
+factor0: ID | '(' superExp0 ')'; //ya
+
 cycle0: FROM cycle1 TO cycle1 DO '{' extras0+ '}'; 
-cycle1: VECTOR | colorFormat0;
+cycle1: VECTOR | colorType0;//ya
 
 vectorOperation0: vectorOperation1 exp0 vectorOperation1; 
-vectorOperation1: ID | VECTOR | vectorAttribute0;
+vectorOperation1: ID | VECTOR | vectorAttribute0; //ya
 
-vectorAttribute0: ID '.'    | X
-                            | Y;
+vectorAttribute0: ID '.' vectorAttribute1;
+vectorAttribute1: X | Y;  //ya
 
 rgbaOperation0: rgbaOperation1 exp0 rgbaOperation1;
-rgbaOperation1: ID | RGBA | rgbaAttribute0;
+rgbaOperation1: ID | RGBA | rgbaAttribute0; //ya
 
-rgbaAttribute0: ID '.'  | RED
-                        | GREEN
-                        | BLUE
-                        | ALPHA;
+rgbaAttribute0: ID '.' rgbaAttribute1 ;
+rgbaAttribute1: RED | GREEN | BLUE | ALPHA; //ya
 
 hexOperation0: hexOperation1 exp0 | hexOperation1;
-hexOperation1: ID | HEX | hexAttribute0;
+hexOperation1: ID | HEX | hexAttribute0; //ya
 
-hexAttribute0: ID '.'   | RED
-                        | GREEN
-                        | BLUE;
+hexAttribute0: ID '.' hexAttribute1;
+hexAttribute1: RED | GREEN | BLUE; //ya   
+
 block0: '{' block1+ '}';
-block1: VAR | instruction0;
+block1: VAR | instruction0; //ya
 
-BLOCK: '';
-main0: FUNCTION VOID MAIN '(' ')' block0 ;
-body0: FUNCTION+ MAIN;
-functionCall0: ID '(' functionCall1 ')' ',';
-functionCall1: ID | ID ',' functionCall1 ;
+main0: FUNCTION VOID MAIN '(' ')' block0 ; //ya
+
+body0: FUNCTION+ MAIN; //ya
+
+functionCall0: ID '(' functionCall1 ')' ';';
+functionCall1: ID | ID ',' functionCall1 ; //ya
