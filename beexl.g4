@@ -1,10 +1,9 @@
 grammar beexl;
-
+WS : [ \t\r\n]+ -> skip ;
 FILENAME : 'filename';
 READ: 'read';
 CREATE: 'create';
 CANVAS: 'canvas';
-HEX:'hex';
 RGBA:'rgba';
 VECTOR:'vector';
 FORMAT: 'format';
@@ -14,8 +13,19 @@ FUNCTION:'fun';
 VOID:'void';
 MAIN:'main';
 RETURN: 'return';
+PRINT: 'print';
+MAX_RED:'MAX_RED';
+MAX_BLUE:'MAX_BLUE';
+MAX_GREEN:'MAX_GREEN';
+MAX_ALPHA:'MAX_ALPHA';
+FILL:'fill';
+PNG: '.png';
+JPG: '.jpg';
+JPEG: '.jpeg';
 X:'x';
 Y:'y';
+INT:'int';
+FLOAT:'float';
 RED:'r';
 GREEN:'g';
 BLUE:'b';
@@ -24,136 +34,114 @@ IF:'if';
 ELSE:'else';
 FROM:'from';
 TO:'to';
+WHILE:'while';
 DO:'do';
 CANVAS_WIDTH:'CANVAS_WIDTH';
 CANVAS_HEIGHT:'CANVAS_HEIGHT';
-A_HEX:'A';
-B_HEX:'B';
-C_HEX:'C';
-D_HEX:'D';
-E_HEX:'E';
-F_HEX:'F';
-ID: [a-z]['_'(a-zA-Z0-9)+]*;
-DIGIT: [0-9];
-NUMBER: DIGIT+;
-MAX_RED:'MAX_RED';
-MAX_BLUE:'MAX_BLUE';
-MAX_GREEN:'MAX_GREEN';
-MAX_ALPHA:'MAX_ALPHA';
+ID: [a-zA-Z]['_'(a-zA-Z0-9)+]*;
+NUMBER: [0-9]+;
+STRINGFILENAME: '"' .+'.'('png'|'jpg'|'jpeg')'"';
 
-FILL:'fill';
+fileconfig0 :  FILENAME  fileconfig1 vars0*  body0;
+fileconfig1: READ 
+                        STRINGFILENAME{createFilename($STRINGFILENAME.text)}  ';'
+                        | CREATE STRINGFILENAME{createFilename($STRINGFILENAME.text)} ';'
+                            canvas0 {createCanvas()}
+                            background0;
 
-WS : [ \t\r\n]+ -> skip ;
+canvas0:CANVAS NUMBER {valueStack.append($NUMBER.text)} ',' NUMBER {addToValueStack($NUMBER.text)} ';';
 
-fileconfig0 : WS* 'filename' WS* fileconfig1 WS* fileconfig2;
-fileconfig1: 'read' fileconfig11
-                        | 'create' fileconfig12;
-fileconfig11: file0 ';' colorFormat0;
-fileconfig12: file0 ';' canvas0 colorFormat0 background0;
-fileconfig2: vars0 fileconfig2 
-                        | body0;
+background0: BACKGROUND rgba0 {createBackground()}';' ;
+  
+type0:VECTOR {nameStack.append($VECTOR.text)}
+             |RGBA {nameStack.append($RGBA.text)}
+             |INT {nameStack.append($INT.text)}
+             |FLOAT {nameStack.append($FLOAT.text)};
 
-file0: '"'  .*  file1 '"';
-file1: '.png.'
-            | '.jpg'
-            | '.jpeg';
+rgba0: RGBA'(' rgba1 ',' rgba1 ',' rgba1 ',' rgba1  ')'  ;
+rgba1:cExtras0|NUMBER {valueStack.append(int($NUMBER.text))};
+cExtras0: (MAX_RED|MAX_BLUE|MAX_GREEN|MAX_ALPHA) {valueStack.append(255)};
 
-canvas0: WS* 'canvas' WS* NUMBER WS* ',' WS* NUMBER WS*;
+vector0: VECTOR '(' vector1 ',' vector1 ')';
+vector1: NUMBER {valueStack.append($NUMBER.text)}|vExtras0;
+vExtras0: CANVAS_HEIGHT{valueStack.append(len(variable_table['canvas']))}
+                      | CANVAS_WIDTH   {valueStack.append(len(variable_table['canvas'][0]))};
 
-background0: WS* 'background' WS*  background1 WS* ';';
-background1: hex0
-                            | rgba0;
+vars0:VAR ID {nameStack.append($ID.text)} ':' type0 {canCreateVariable()}? ';';
 
-colorFormat0: FORMAT colorType0 WS* ';' ;
+instruction0: (extras0| conditional0|cycle0|while0);
 
-colorType0: RGBA 
-                            | HEX;
+while0: WHILE '(' hyperExp0 ')' '{' extras0+ '}';
 
-type0: WS* VECTOR WS*
-                | colorType0;
+extras0:pixelFill0 | assignment0 | print0 | functionCall0;
 
-rgba0: WS* RGBA WS* '(' WS* rgba1 ;
-rgba1: rgba2 
-                | WS* ')' WS* ';';
+pixelFill0:FILL (ID|vector0) (ID|rgba0) ';';
 
-rgba2: cExtras0 
-                | NUMBER  | ;
+assignment0:ID'=' (hyperExp0| vector0 | rgba0) ';'; 
 
-cExtras0: MAX_RED
-                        | MAX_BLUE
-                        | MAX_GREEN
-                        | MAX_ALPHA;
+print0: PRINT ';' ;
 
-hex0: '#';
-hex1 : DIGIT hex2
-            | hexChar0 hex2;
+functionCall0: ID '(' ((ID (',' ID)*))* ')' ';';
 
-hex2: hex1 
-            | ;
+conditional0: IF '('  hyperExp0 ')' '{' extras0* '}' conditional1?; 
+conditional1: ELSE '{' extras0* '}';
 
-hexChar0: A_HEX
-                      | B_HEX
-                      | C_HEX
-                      | D_HEX
-                      | E_HEX
-                      | F_HEX;
+hyperExp0:  superExp0  hyperExp1?;
+hyperExp1:'&&' {operatorStack.append("&&")} hyperExp0|'||'  {operatorStack.append("||")}hyperExp0;
 
-vector0: WS* VECTOR WS* '(' vector1;
-vector1: NUMBER vector2
-                  | vExtras0 vector2;
+superExp0: exp0  superExp1?;
+superExp1: ('>'  {operatorStack.append(">")}
+                            |'<'  {operatorStack.append("<")}
+                            |'<=' {operatorStack.append("<=")}
+                            |'>='  {operatorStack.append(">=")}
+                            |'=='  {operatorStack.append("==")}
+                            |'!='  {operatorStack.append("!=")}) superExp0;
 
-vector2: ',' vector1 | ')' WS* ';';
+exp0: term0 exp1?;
+exp1: '+' {operatorStack.append("+")} exp0| '-' {operatorStack.append("-")} exp0;
 
-vExtras0: CANVAS_HEIGHT 
-                      | CANVAS_WIDTH;
+term0:  factor0 term1?;
+term1: ('*'  {operatorStack.append("*")}
+                |'/'  {operatorStack.append("/")}) term0;
 
-vars0: WS* VAR WS* ID WS* vars1;
-vars1: HEX vars11 
-             | RGBA vars11
-             | VECTOR vars12; 
-vars11: WS* ':' colorType0 ';'
-              | WS* ':' colorType0 assignment20 ';';
-vars12: VECTOR assignment20
-                | VECTOR ';';
+factor0:ID {$ID.text in variable_table}?
+                   | NUMBER {operatorStack.append($NUMBER.text)}
+                   | rgbaAttribute0
+                    | vectorAttribute0
+                    | '(' {operatorStack.append("(")} hyperExp0 ')'  {operatorStack.pop()};
 
-instruction0: extras0 
-                            | conditional0
-                            | cycle0;
+cycle0: FROM cycle1 TO cycle1 DO  '{' extras0* '}' ; 
+cycle1:vector0|rgba0;
 
-extras0: pixelFill0
-                   | assignment0
-                   | print0
-                   | functionCall0;
+vectorOperation0: vectorOperation1 exp0 vectorOperation1 ; 
+vectorOperation1: ID {validateID($ID.text,"vector")}?
+                                        |vector0
+                                        |vectorAttribute0;
 
-assignment20: ; //pending
-pixelFill0: ; //pending
-assignment0: ; //pending
-print0: ; //pending
-conditional0: ; //pending
-hyperExp0: ; //pending
-superExp0: ;//pending
-exp0: ;//pending
-term0: ;//pending
-factor0: ; //pending
-cycle0: ; //pending
-vectorOperation0: ; //pending
-vectorAttribute0: ;//pending
-rgbaOperation0: ;//pending
-rgbaAttribute0: ;//pending
-hexOperation0: ;//pending
-hexAttribute0: ;//pending
-block0: ;//pending
-main0: ;//pending
-body0: ;//pending
-functionCall0: ;//pending
+vectorAttribute0: ID{validateID($ID.text,'vector')}? '.' (X{nameStack.append("x")}|Y{nameStack.append("y")});
+                                        
+rgbaOperation0: rgbaOperation1 exp0 rgbaOperation1;
+rgbaOperation1: ID {validateID($ID.text,"rgba")}
+                                    | rgba0
+                                    | rgbaAttribute0;
 
+rgbaAttribute0:  ID{validateID($ID.text,'rgba')}? {nameStack.append($ID.text)} '.' rgbaAttribute1 ;
+rgbaAttribute1: RED {nameStack.append("r")}
+                                  | GREEN {nameStack.append("g")}
+                                  | BLUE {nameStack.append("b")}
+                                  | ALPHA {nameStack.append("a")};
 
+block0:'{' (vars0 | instruction0)* '}';
 
+main0:FUNCTION VOID MAIN  '('  ')' block0 {generateQuadruples()};
 
+body0:  functionDefinition0* main0;
 
+functionDefinition0:FUNCTION functionDefinition1 ID
+                                        {nameStack.append($ID.text)}
+                                        {nameStack.append("function")}
+                                        {canCreateVariable()}? '(' functionDefinition2* ')' block0;
 
+functionDefinition1:type0|VOID {nameStack.append("void")};
 
-
-
-
-
+functionDefinition2:ID{validateID($ID.text,'function')}?':'type0 ','| ID':'type0;
