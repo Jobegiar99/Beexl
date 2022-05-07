@@ -16,9 +16,9 @@
 <h1> Current Progress </h1>
 <ol>
 <li> Syntax Diagram : Done </li>
-<li> Lexical Analysis: In Progress </li>
-<li> Syntaxis Analysis: In Progress </li>
-<li> Semantic Analysis: Pending </li>
+<li> Lexical Analysis: Done </li>
+<li> Syntaxis Analysis: Done </li>
+ <li> Semantic : In progress </li>
 <li> Intermediate Code: Pending </li>
 <li> Virtual Machine: Pending </li>
 </ol>
