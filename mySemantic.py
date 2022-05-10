@@ -1,73 +1,65 @@
 from ast import operator
+from email.policy import default
 from tkinter.font import names
-
+from collections import defaultdict
 
 nameStack = []
 valueStack = []
+typeStack = []
 jumpStack = []
-operatorStack = []
+operandStack = defaultdict(lambda:[])
+operatorStack = defaultdict(lambda:[])
+temporalCount = 0
 tokenCount = 0
-variable_table = {}
+operandDepth = 0
+function_table = defaultdict(lambda:{})
+current_scope = 'global'
+function_table[current_scope] = {}
 quadruples = []
 
 def createFilename(token):
-    global tokenCount
-    quadruples.append("FILENAME\t" + token + " \t\tt" + str(tokenCount))
-    tokenCount += 1
+    pass
 
 def addToValueStack(token):
-    valueStack.append(token)
+    pass
 
 def createCanvas():
-    global tokenCount
-    columns = int(valueStack.pop())
-    rows = int(valueStack.pop())
-    variable_table['canvas'] = [[0 for c in range(columns)] for r in range(rows)]
-    quadruples.append("CREATE_CANVAS\t" + str(rows) + " \t" + str(columns)+"\tt" + str(tokenCount))
-    tokenCount += 1
+    pass
     
 def createBackground():
-    global tokenCount
-    alpha =  int(valueStack.pop())
-    green =  int(valueStack.pop())
-    blue =  int(valueStack.pop())
-    red =  int(valueStack.pop())
-    variable_table['canvas_color'] =  [red,green,blue,alpha]
-    quadruples.append( "CREATE_BACKGROUND\t" \
-                                                + 'rgba\t'
-                                                + "(" + str(red) + "," \
-                                                + str(blue) + "," \
-                                                + str(green) + "," \
-                                                + str(alpha) + ") \tt" \
-                                                + str(tokenCount) \
-                                            )
-    tokenCount += 1
+    pass
 
 def canCreateVariable():
-    variable_type = nameStack.pop()
-    variable_name = nameStack.pop()
-    
-    if variable_name in variable_table:
-        print("ERROR variable",variable_name,"already exists")
-        return False
-    
-    variable_table[variable_name] = {"type":variable_type}
-    return True
+    pass
 
 def validateID(token, expectedType):
-    
-    if  token not in variable_table:
-        print("Variable does not exists")
-        return False
-
-    if variable_table[token]['type'] != expectedType:
-        print("Type mismatch")
-        return False
-    return True
+    pass
 
 
 def generateQuadruples():
-    print(operatorStack)
-    for q in quadruples:
-        print(q)
+    pass
+
+def linearExpressionExitHelper(targetTokens: 'list[str]'):
+        global operatorOrder, operatorStack, typeStack,operandDepth,quadruples
+        if len(operatorStack[operandDepth]) == 0 or len(operandStack[operandDepth]) < 2:
+            return
+        
+        if operatorStack[operandDepth][-1] not in targetTokens:
+            return
+
+        linearExpressionQuadrupleHelper()
+
+def linearExpressionQuadrupleHelper():
+        global operandStack,typeStack,temporalCount,operandDepth
+        temporalVariable = "t" + str(temporalCount)
+        temporalCount += 1
+        left_operand = operandStack[operandDepth].pop(-1)
+        #left_type = typeStack.pop(-1)
+        
+        right_operand = operandStack[operandDepth].pop(-1)
+        #right_type = typeStack.pop(-1)
+
+        operator = operatorStack[operandDepth].pop()
+        quadruples.append(operator+ " " + right_operand+ " " + left_operand+" "+temporalVariable)
+        operandStack[operandDepth].append(temporalVariable)
     
