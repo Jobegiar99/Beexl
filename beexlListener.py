@@ -1,4 +1,9 @@
 # Generated from beexl.g4 by ANTLR 4.9.3
+# TO DO:
+    #add type stack
+    #add special cases for vector and rgba
+from ast import arg
+from unicodedata import name
 from antlr4 import *
 if __name__ is not None and "." in __name__:
     from .beexlParser import beexlParser
@@ -43,24 +48,6 @@ class beexlListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by beexlParser#rgba0.
-    def enterRgba0(self, ctx:beexlParser.Rgba0Context):
-        pass
-
-    # Exit a parse tree produced by beexlParser#rgba0.
-    def exitRgba0(self, ctx:beexlParser.Rgba0Context):
-        pass
-
-
-    # Enter a parse tree produced by beexlParser#rgba1.
-    def enterRgba1(self, ctx:beexlParser.Rgba1Context):
-        pass
-
-    # Exit a parse tree produced by beexlParser#rgba1.
-    def exitRgba1(self, ctx:beexlParser.Rgba1Context):
-        pass
-
-
     # Enter a parse tree produced by beexlParser#cExtras0.
     def enterCExtras0(self, ctx:beexlParser.CExtras0Context):
         pass
@@ -70,70 +57,23 @@ class beexlListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by beexlParser#vector0.
-    def enterVector0(self, ctx:beexlParser.Vector0Context):
-        pass
-
-    # Exit a parse tree produced by beexlParser#vector0.
-    def exitVector0(self, ctx:beexlParser.Vector0Context):
-        pass
-
-
-    # Enter a parse tree produced by beexlParser#vector1.
-    def enterVector1(self, ctx:beexlParser.Vector1Context):
-        pass
-
-    # Exit a parse tree produced by beexlParser#vector1.
-    def exitVector1(self, ctx:beexlParser.Vector1Context):
-        pass
-
-
-    # Enter a parse tree produced by beexlParser#vExtras0.
-    def enterVExtras0(self, ctx:beexlParser.VExtras0Context):
-        pass
-
-    # Exit a parse tree produced by beexlParser#vExtras0.
-    def exitVExtras0(self, ctx:beexlParser.VExtras0Context):
-        pass
-
-
+        
     # Enter a parse tree produced by beexlParser#vars0.
     def enterVars0(self, ctx:beexlParser.Vars0Context):
         global function_table, current_scope
         var_info = ctx.getText().split('var')[1].split(':')
         var_name = var_info[0]
-        var_type = var_info[1]
-        if "variables" not in function_table[current_scope]:
-            function_table[current_scope]["variables"] = {}
+        var_type = var_info[1][:-1]
 
         if var_name in function_table[current_scope]["variables"]:
-            raise Exception( "variable redefinition" )
+            raise Exception( "Variable already defined:",var_name)
         
-        function_table[current_scope]["variables"][var_name] = {"type":var_type}
-
-    # Exit a parse tree produced by beexlParser#vars0.
-    def exitVars0(self, ctx:beexlParser.Vars0Context):
-        pass
-
-
-    # Enter a parse tree produced by beexlParser#instruction0.
-    def enterInstruction0(self, ctx:beexlParser.Instruction0Context):
-        pass
-
-    # Exit a parse tree produced by beexlParser#instruction0.
-    def exitInstruction0(self, ctx:beexlParser.Instruction0Context):
-        pass
-
+        function_table[current_scope]["variables"][var_name] = {"type": var_type}
 
     # Enter a parse tree produced by beexlParser#while0.
     def enterWhile0(self, ctx:beexlParser.While0Context):
         global jumpStack,quadruples
         jumpStack.append(len(quadruples))
-        print(len(quadruples))
-
-    # Exit a parse tree produced by beexlParser#while0.
-    def exitWhile0(self, ctx:beexlParser.While0Context):
-        pass
 
     # Enter a parse tree produced by beexlParser#while0.
     def enterWhile1(self, ctx:beexlParser.While1Context):
@@ -141,7 +81,6 @@ class beexlListener(ParseTreeListener):
         jumpStack.append(len(quadruples))
         quadruples.append("GOTO F " + operandStack[0].pop())
         
-
     # Exit a parse tree produced by beexlParser#while0.
     def exitWhile1(self, ctx:beexlParser.While1Context):
         global quadruples, jumpStack,operandStack
@@ -150,50 +89,82 @@ class beexlListener(ParseTreeListener):
         quadruples.append("GOTO " + str(while_start))
         quadruples[while_false ] +=" " + str(len(quadruples) ) 
 
-        
-    # Enter a parse tree produced by beexlParser#extras0.
-    def enterExtras0(self, ctx:beexlParser.Extras0Context):
-        pass
-
-    # Exit a parse tree produced by beexlParser#extras0.
-    def exitExtras0(self, ctx:beexlParser.Extras0Context):
-        pass
-
 
     # Enter a parse tree produced by beexlParser#pixelFill0.
     def enterPixelFill0(self, ctx:beexlParser.PixelFill0Context):
-        print(ctx.getText())
+        global function_table,current_scope, validateVariable
+        
+        fill_info = ctx.getText().split('fill')[1].split(',')
 
-    # Exit a parse tree produced by beexlParser#pixelFill0.
-    def exitPixelFill0(self, ctx:beexlParser.PixelFill0Context):
-        pass
+        coord = fill_info[0]
+        color = fill_info[1][:-1]
+        vector_values = []
+        rgba_values = []
 
+        if not validateVariable(coord,"vector",current_scope):
+            raise Exception("Undefined vector for pixel fill:",coord)
+        
+        result = getVectorAttributes(coord,current_scope)
+        if result == None:
+            raise Exception("Vector has no values")
+        else:
+            x,y = result
+            vector_values += [x,y]
 
+        if not validateVariable(color,"rgba",current_scope):
+            raise Exception("undefined rgba for pixel fill:",color)
+
+        result = getRGBAAttributes(color,current_scope)
+        if result == None:
+            raise Exception("Color has no values")
+        else:
+            print("RGBA", result)
+            r,g,b,a = result
+            rgba_values += [r,g,b,a]
+        
+        quadruples.append("FILL\t" + ",".join(vector_values) + "\t" + ",".join(rgba_values))
+
+        
     # Enter a parse tree produced by beexlParser#assignment0.
     def enterAssignment0(self, ctx:beexlParser.Assignment0Context):
-        global operatorStack,operandDepth,operandStack
+        global operatorStack,operandDepth,operandStack,current_scope
         operatorStack.clear()
         operandStack.clear()
         operandDepth = 0
-
+            
     # Exit a parse tree produced by beexlParser#assignment0.
     def exitAssignment0(self, ctx:beexlParser.Assignment0Context):
-        global operandStack,operandDepth,operatorStack,quadruples
+        global operandStack,operandDepth,\
+                      operatorStack,quadruples,\
+                      validateVariable,current_scope, function_table
+
+        assignment_info = ctx.getText().split('=')
+        variable_name = assignment_info[0]
+        variable_type ="vector" if "vector" in assignment_info[1] else "rgba" if "rgba" in assignment_info[1] else "exp"
+        if variable_type != 'exp':
+            result, error =  validateVariable(variable_name,variable_type,current_scope)
+            if not result:
+                if error == "TYPE":
+                    raise Exception("Type mismatch in assignment of variable:",assignment_info[0])
+                raise Exception("Error: Assignment of non-existent variable:",assignment_info[0])
+
+            if variable_type == "vector":
+                vector_info = assignment_info[1].split('(')[1].split(')')[0].split(',')
+                assignVectorAttributes(variable_name,vector_info[0],vector_info[1],current_scope)
+                return
+
+            rgba_info = assignment_info[1].split('(')[1].split(')')[0].split(',')
+            assignRgbaAttributes(variable_name,rgba_info[0],rgba_info[1],rgba_info[2],rgba_info[3],current_scope)
+
         if len(operandStack[operandDepth]) == 0:
             return
-
-        info = ctx.getText().split("=")
-        quadruples.append("= " + operandStack[operandDepth].pop() + " " + info[0])
+        quadruples.append("= " + operandStack[operandDepth].pop() + " " + assignment_info[0])
+    
 
     # Enter a parse tree produced by beexlParser#print0.
     def enterPrint0(self, ctx:beexlParser.Print0Context):
         global quadruples
         quadruples.append(ctx.getText().split(';')[0])
-
-    # Exit a parse tree produced by beexlParser#print0.
-    def exitPrint0(self, ctx:beexlParser.Print0Context):
-        pass
-
 
     # Enter a parse tree produced by beexlParser#functionCall0.
     def enterFunctionCall0(self, ctx:beexlParser.FunctionCall0Context):
@@ -201,16 +172,34 @@ class beexlListener(ParseTreeListener):
 
     # Exit a parse tree produced by beexlParser#functionCall0.
     def exitFunctionCall0(self, ctx:beexlParser.FunctionCall0Context):
-        pass
+        call_info = ctx.getText().split('(')
+        function_name = call_info[0]
+        arguments = call_info[1].split(')')[0].split(',')
+        if function_name not in function_table:
+            raise Exception("Function not declared")
+        quadruples.append("ERA\t" + function_name)
+        argument_count = len(function_table[function_name]['types'])
+        if '' in arguments:
+            arguments = []
 
+        given_arg_count = len(arguments)
+        
+        if given_arg_count != argument_count:
+            raise Exception("Expecting " + str(argument_count) + " but " + str(given_arg_count) + " were given")
 
-    # Enter a parse tree produced by beexlParser#conditional0.
-    def enterConditional0(self, ctx:beexlParser.Conditional0Context):
-        pass
+        argument_types = function_table[function_name]['types']
 
-    # Exit a parse tree produced by beexlParser#conditional0.
-    def exitConditional0(self, ctx:beexlParser.Conditional0Context):
-        pass
+        for index in range(argument_count):
+            result,r_type = validateVariable(arguments[index],argument_types[index],current_scope)
+            if not result:
+                if r_type == "NAME":
+                    raise Exception("Parameter with name " + arguments[index] + " is not a variable")
+                raise Exception("Expecting " + argument_types[index] )
+            
+            quadruples.append("PARAM\t" + arguments[index] + "\t" + str(index + 1))
+
+        quadruples.append("GOSUB\t" + function_name)
+
 
     # Enter a parse tree produced by beexlParser#conditional0.
     def enterConditional1(self, ctx:beexlParser.Conditional1Context):
@@ -229,7 +218,6 @@ class beexlListener(ParseTreeListener):
             if_line = jumpStack.pop()
             quadruples[if_line] += " " + str(len(quadruples))
 
-
     # Enter a parse tree produced by beexlParser#conditional1.
     def enterConditional2(self, ctx:beexlParser.Conditional2Context):
         global quadruples,jumpStack
@@ -241,58 +229,34 @@ class beexlListener(ParseTreeListener):
         global quadruples, jumpStack
         goto_line = jumpStack[-1]
         quadruples[goto_line ] += str(len(quadruples) )
-        
-
-
-    # Enter a parse tree produced by beexlParser#hyperExp0.
-    def enterHyperExp0(self, ctx:beexlParser.HyperExp0Context):
-        pass
 
     # Exit a parse tree produced by beexlParser#hyperExp0.
     def exitHyperExp0(self, ctx:beexlParser.HyperExp0Context):
-        self.linearExpressionExitHelper(["&&","||"])
-
-    # Enter a parse tree produced by beexlParser#hyperExp1.
-    def enterHyperExp1(self, ctx:beexlParser.HyperExp1Context):
-        pass
+        linearExpressionExitHelper(["&&","||"])
 
     # Exit a parse tree produced by beexlParser#hyperExp1.
     def exitHyperExp1(self, ctx:beexlParser.HyperExp1Context):
         global operatorOrder, operandStack,operandDepth
         token = ctx.getText()
-        self.linearExpressionExitHelper(["&&",'||'])
+        linearExpressionExitHelper(["&&",'||'])
         for op in ["&&","||"]:
             if op in token[0:2]:
                 operatorStack[operandDepth].append(op)
                 return
 
-    # Enter a parse tree produced by beexlParser#superExp0.
-    def enterSuperExp0(self, ctx:beexlParser.SuperExp0Context):
-        pass
-
     # Exit a parse tree produced by beexlParser#superExp0.
     def exitSuperExp0(self, ctx:beexlParser.SuperExp0Context):
-        self.linearExpressionExitHelper([">=","<=","!=","==",">","<"])
-
-
-    # Enter a parse tree produced by beexlParser#superExp1.
-    def enterSuperExp1(self, ctx:beexlParser.SuperExp1Context):
-        pass
+        linearExpressionExitHelper([">=","<=","!=","==",">","<"])
 
     # Exit a parse tree produced by beexlParser#superExp1.
     def exitSuperExp1(self, ctx:beexlParser.SuperExp1Context):
         global operatorOrder, operandStack,operandDepth
         token = ctx.getText()
-        self.linearExpressionExitHelper([">=","<=","!=","==",">","<"])
+        linearExpressionExitHelper([">=","<=","!=","==",">","<"])
         for op in [">=","<=","!=","==",">","<"]:
             if op in token:
                 operatorStack[operandDepth].append(op)
                 return
-
-
-    # Enter a parse tree produced by beexlParser#exp0.
-    def enterExp0(self, ctx:beexlParser.Exp0Context):
-        pass
 
     # Exit a parse tree produced by beexlParser#exp0.
     def exitExp0(self, ctx:beexlParser.Exp0Context):
@@ -302,23 +266,14 @@ class beexlListener(ParseTreeListener):
         if operatorStack[operandDepth][-1] not in "+-":
             return
         
-        self.linearExpressionQuadrupleHelper()
-
-
-    # Enter a parse tree produced by beexlParser#exp1.
-    def enterExp1(self, ctx:beexlParser.Exp1Context):
-        pass
+        linearExpressionQuadrupleHelper()
 
     # Exit a parse tree produced by beexlParser#exp1.
     def exitExp1(self, ctx:beexlParser.Exp1Context):
         global operandStack,operandDepth
-        self.linearExpressionExitHelper(["+","-"])
+        linearExpressionExitHelper(["+","-"])
         operatorStack[operandDepth].append(ctx.getText()[0])
         
-        
-    # Enter a parse tree produced by beexlParser#term0.
-    def enterTerm0(self, ctx:beexlParser.Term0Context):
-        pass
 
     # Exit a parse tree produced by beexlParser#term0.
     def exitTerm0(self, ctx:beexlParser.Term0Context):
@@ -328,22 +283,13 @@ class beexlListener(ParseTreeListener):
         if operatorStack[operandDepth][-1] not in "*/":
             return
         
-        self.linearExpressionQuadrupleHelper()       
+        linearExpressionQuadrupleHelper()       
         
     def enterTerm1(self,ctx:beexlParser.Term1Context):
         global operatorStack,operandDepth
         token = ctx.getText()[0]
-        self.linearExpressionExitHelper(["*","/"])
+        linearExpressionExitHelper(["*","/"])
         operatorStack[operandDepth].append(token)
-
-    # Exit a parse tree produced by beexlParser#term1.
-    def exitTerm1(self, ctx:beexlParser.Term1Context):
-        pass
-    
-
-    # Enter a parse tree produced by beexlParser#factor0.
-    def enterFactor0(self, ctx:beexlParser.Factor0Context):
-        pass
 
     # Exit a parse tree sproduced by beexlParser#factor0.
     def exitFactor0(self, ctx:beexlParser.Factor0Context):
@@ -356,7 +302,7 @@ class beexlListener(ParseTreeListener):
             return
 
         operandStack[operandDepth] += [token]
-        typeStack += ['int']
+        #typeStack += ['int']
 
     # Enter a parse tree produced by beexlParser#main0.
     def enterExpressionRestart0(self, ctx:beexlParser.ExpressionRestart0Context):
@@ -372,25 +318,6 @@ class beexlListener(ParseTreeListener):
                 operandStack[operandDepth + 1].pop(0)\
         )
         operandStack.pop(operandDepth + 1)
-        
-
-
-    # Enter a parse tree produced by beexlParser#cycle0.
-    def enterCycle0(self, ctx:beexlParser.Cycle0Context):
-        pass
-
-    # Exit a parse tree produced by beexlParser#cycle0.
-    def exitCycle0(self, ctx:beexlParser.Cycle0Context):
-        pass
-
-
-    # Enter a parse tree produced by beexlParser#cycle1.
-    def enterCycle1(self, ctx:beexlParser.Cycle1Context):
-        pass
-
-    # Exit a parse tree produced by beexlParser#cycle1.
-    def exitCycle1(self, ctx:beexlParser.Cycle1Context):
-        pass
 
 
     # Enter a parse tree produced by beexlParser#vectorOperation0.
@@ -456,93 +383,48 @@ class beexlListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by beexlParser#block0.
-    def enterBlock0(self, ctx:beexlParser.Block0Context):
-        pass
-
-    # Exit a parse tree produced by beexlParser#block0.
-    def exitBlock0(self, ctx:beexlParser.Block0Context):
-        pass
-
-
     # Enter a parse tree produced by beexlParser#main0.
     def enterMain0(self, ctx:beexlParser.Main0Context):
-        pass
+        global current_scope, function_table
+        current_scope = "main"
 
     # Exit a parse tree produced by beexlParser#main0.
     def exitMain0(self, ctx:beexlParser.Main0Context):
-        pass
+        global current_scope, function_table, quadruples
+        current_scope = "global"
+        quadruples.append("ENDPROGRAM")
 
-
-    # Enter a parse tree produced by beexlParser#body0.
-    def enterBody0(self, ctx:beexlParser.Body0Context):
-        pass
-
-    # Exit a parse tree produced by beexlParser#body0.
-    def exitBody0(self, ctx:beexlParser.Body0Context):
-        global operatorOrder,operatorStack,quadruples
-        print("OPERATORS",operatorStack,"\n\n",operandStack)
-        quadruples.append("END PROGRAM")
-        print("----QUADRUPLES----")
-        count = 0
-        for q in quadruples:
-            print(count,q)
-            count += 1
-        print("----END----")
-
-
-    # Enter a parse tree produced by beexlParser#functionDefinition0.
-    def enterFunctionDefinition0(self, ctx:beexlParser.FunctionDefinition0Context):
-        pass
-
+        
     # Exit a parse tree produced by beexlParser#functionDefinition0.
     def exitFunctionDefinition0(self, ctx:beexlParser.FunctionDefinition0Context):
-        pass
-
-
-    # Enter a parse tree produced by beexlParser#functionDefinition1.
-    def enterFunctionDefinition1(self, ctx:beexlParser.FunctionDefinition1Context):
-        pass
+        global typeStack, function_name,nameStack
+        function_type = typeStack.pop(-1)
+        function_name = ctx.getText().split(function_type)[1].split('(')[0]
+        
+        function_table[function_name]['types'] = nameStack
+        nameStack = []
+        
 
     # Exit a parse tree produced by beexlParser#functionDefinition1.
     def exitFunctionDefinition1(self, ctx:beexlParser.FunctionDefinition1Context):
-        pass
-
-
-    # Enter a parse tree produced by beexlParser#functionDefinition2.
-    def enterFunctionDefinition2(self, ctx:beexlParser.FunctionDefinition2Context):
-        pass
+        global typeStack
+        typeStack  += [ctx.getText()]
 
     # Exit a parse tree produced by beexlParser#functionDefinition2.
     def exitFunctionDefinition2(self, ctx:beexlParser.FunctionDefinition2Context):
-        pass
-
-
-    def linearExpressionExitHelper(self, targetTokens: 'list[str]'):
-        global operatorOrder, operatorStack, typeStack,operandDepth,quadruples
-        if len(operatorStack[operandDepth]) == 0 or len(operandStack[operandDepth]) < 2:
-            return
+        global nameStack
+        myType = ctx.getText().split(':')[1]
         
-        if operatorStack[operandDepth][-1] not in targetTokens:
-            return
+        if ',' in myType:
+            myType = myType[:-1]
 
-        self.linearExpressionQuadrupleHelper()
+        if myType not in ['vector','int','rgba','float']:
+            raise Exception("Invalid type in function parameter declaration:",myType)
+        nameStack.append(myType)
 
-    def linearExpressionQuadrupleHelper(self):
-        global operandStack,typeStack,temporalCount,operandDepth
-        print("OPERAND",operandStack,"OPERATOR",operandStack)
-        temporalVariable = "t" + str(temporalCount)
-        temporalCount += 1
-        left_operand = operandStack[operandDepth].pop(-1)
-        #left_type = typeStack.pop(-1)
-        
-        right_operand = operandStack[operandDepth].pop(-1)
-        #right_type = typeStack.pop(-1)
-
-        operator = operatorStack[operandDepth].pop()
-        quadruples.append(operator+ " " + right_operand+ " " + left_operand+" "+temporalVariable)
-        operandStack[operandDepth].append(temporalVariable)
-
+    def exitFunctionDefinition3(self, ctx:beexlParser.FunctionDefinition3Context):
+        global quadruples
+        quadruples.append("ENDFUNC")
 
 
 del beexlParser

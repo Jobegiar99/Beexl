@@ -20,7 +20,7 @@ vExtras0:CANVAS_HEIGHT|CANVAS_WIDTH;
 
 vars0:VAR ID':'type0';';
 
-instruction0:(extras0|conditional0|cycle0|while0);
+instruction0:(extras0|conditional0|while0);
 
 while0: WHILE'('hyperExp0')'while1;
 while1:'{'extras0+'}';
@@ -56,9 +56,6 @@ factor0:ID
                    |expressionRestart0;
 expressionRestart0:'('hyperExp0')';
 
-cycle0:FROM cycle1 TO cycle1 DO'{'extras0*'}'; 
-cycle1:vector0|rgba0;
-
 vectorOperation0:vectorOperation1 exp0 vectorOperation1 ; 
 vectorOperation1: ID |vector0|vectorAttribute0;
 
@@ -76,11 +73,12 @@ main0:FUNCTION VOID MAIN'('')'block0;
 
 body0:functionDefinition0* main0;
 
-functionDefinition0:FUNCTION functionDefinition1 ID'('functionDefinition2*')'block0;
+functionDefinition0:FUNCTION functionDefinition1 ID'('functionDefinition2*')'functionDefinition3;
 
 functionDefinition1:type0|VOID;
 
-functionDefinition2:ID':'type0','| ID':'type0;
+functionDefinition2:ID':'type0','|ID':'type0;
+functionDefinition3:block0;
 
 WS : [ \t\r\n]+ -> skip ;
 FILENAME : 'filename';

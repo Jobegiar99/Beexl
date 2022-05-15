@@ -4,6 +4,7 @@ from beexlLexer import beexlLexer
 from beexlListener import beexlListener
 from beexlParser import beexlParser
 from collections import defaultdict
+from mySemantic import *
 """
 TO DO: add rules to handle special words with a parenthesis and no space
 """
@@ -78,26 +79,37 @@ fun void main(){
 """
 
 test_valid_2 = """
-filename read "beexl.jpg";
+filename create "beexl.jpg";
+canvas 123, 123;
+background rgba(10,10,10,123);
 var myVector: vector;
+
+fun void myXD (){
+    myVector = vector ( 12 , 12 );
+}
 
 fun void main (){
     myVector = vector ( 10, 10);
-    var al : vector;
+    var merg : rgba;
+    var al : int ;
     al =  (A + ( B * ( A - fdh ) ) ) - B;
     print;
+    merg = rgba ( 12, 125, 255, 0 );
+    var xD: vector;
+    xD = vector (10,15) ;
     if ( A < B && B < A ) {
         print;
     }
     else {
-        xd = A * B < ( A + B ) * C ;
+        xD = A * B < ( A + B ) * C ;
     }
+    
     while ( A == B || B < C ){
         print;
-        fill myVector merg;
+        fill myVector , merg;
     }
 
-    if ( ( A * B < C * A ) && ( A - B >= C + A || A < B ) )){
+    if ( ( A * B < C * A ) && ( A - B >= C + A || A < B ) )  {
         print;
     }
 }
@@ -106,13 +118,27 @@ fun void main (){
 
 
 
-test_vbealid_3 = """
+test_valid_3 = """
 filename create "beexl.jpg";
 canvas 10 , 10 ;
 background rgba ( 10,12,14,12 ) ;
 
+var al: vector;
+var ol: rgba;
+
+fun void as ( ert :vector , olo:int , eort : int , eorkgoekro : rgba ){
+    if( ert < olo){
+        fill ert,eorkgoekro;
+    }
+}
+
 fun void main () {
-    A = ( 1 - 2 ) * 3  / 4  / ( 5 * ( 6 * 7 ) / 8 );
+    al = vector ( 10 , 10123 );
+    ol = rgba ( 10, 1 , 12 , 69);
+    var olo : int;
+    
+    fill al , ol;
+    as ( al, olo, olo, ol );
 }
 """
 
@@ -129,7 +155,8 @@ for test in tests:
     tree = parser.fileconfig0()
     listener = beexlListener()
     ParseTreeWalker().walk(listener,tree)
-    #walker = ParseTreeWalker()
-    #print(tree,"TREE")
-    #walker.walk(printer,tree)
-    #print(tree.toStringTree())
+
+count = 0
+for q in quadruples:
+    print(count,q)
+    count += 1
