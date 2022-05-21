@@ -76,14 +76,14 @@ class BeexlSemantic():
             or len(self.operandStack[self.operandDepth]) < 2
             ):
             return
-        print("HERE")  
         if self.operatorStack[self.operandDepth][-1] not in targetTokens:
             return
-        print("HI")
         self.linearExpressionQuadrupleHelper()
 
     def linearExpressionQuadrupleHelper(self):
+            #update this to memory instead of "temporal"
             temporalVariable = "temporal"
+            #-----------------------
             left_operand = self.operandStack[self.operandDepth].pop(-1)
             left_type = self.typeStack.pop(-1)
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
