@@ -53,16 +53,11 @@ term1: ('/'|'*')term0;
 
 factor0:ID
                    |NUMBER
+                   |DECIMAL_NUMBER
                    |expressionRestart0;
 expressionRestart0:'('hyperExp0')';
 
-vectorOperation0:vectorOperation1 exp0 vectorOperation1 ; 
-vectorOperation1: ID |vector0|vectorAttribute0;
-
 vectorAttribute0:ID'.'(X|Y);
-                                        
-rgbaOperation0:rgbaOperation1 exp0 rgbaOperation1;
-rgbaOperation1:ID|rgba0|rgbaAttribute0;
 
 rgbaAttribute0:ID'.'rgbaAttribute1 ;
 rgbaAttribute1:RED|GREEN|BLUE|ALPHA;
@@ -119,6 +114,7 @@ WHILE:'while';
 DO:'do';
 CANVAS_WIDTH:'CANVAS_WIDTH';
 CANVAS_HEIGHT:'CANVAS_HEIGHT';
-NUMBER: [0-9]+;
+NUMBER: '-'?[0-9]+;
+DECIMAL_NUMBER: NUMBER'.'[0-9]+;
 STRINGFILENAME: '"' .+?'.'('png'|'jpg'|'jpeg')'"';
 ID: [a-zA-Z]['_'(a-zA-Z0-9)+]*;

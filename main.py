@@ -81,20 +81,20 @@ fun void main(){
 test_valid_2 = """
 filename create "beexl.jpg";
 canvas 123, 123;
-background rgba(10,10,10,123);
+background rgba (10,10,10,123 );
 var myVector: vector;
 
 fun void myXD (){
     myVector = vector ( 12 , 12 );
 }
 
-fun void main (){
+fun void main () {
     myVector = vector ( 10, 10);
-    var merg : rgba;
+    var merg : rgba ;
     var al : int ;
-    al =  (A + ( B * ( A - fdh ) ) ) - B;
+    al =  B + ( A + ( B * ( A - fdh ) ) ) - B;
     print;
-    merg = rgba ( 12, 125, 255, 0 );
+    merg = rgba ( 12 , 125 , 255 , 0 );
     var xD: vector;
     xD = vector (10,15) ;
     if ( A < B && B < A ) {
@@ -121,24 +121,35 @@ fun void main (){
 test_valid_3 = """
 filename create "beexl.jpg";
 canvas 10 , 10 ;
-background rgba ( 10,12,14,12 ) ;
+background rgba ( 10 , 12 , 14,12 ) ;
 
 var al: vector;
 var ol: rgba;
+var olo: int;
 
-fun void as ( ert :vector , olo:int , eort : int , eorkgoekro : rgba ){
-    if( ert < olo){
-        fill ert,eorkgoekro;
-    }
+fun void ameno ( ert :vector , olo:int , eort : int , eorkgoekro : rgba ){
+    ameno (al , olo , olo , ol );
 }
 
 fun void main () {
     al = vector ( 10 , 10123 );
     ol = rgba ( 10, 1 , 12 , 69);
     var olo : int;
-    
+    var A : int;
+    olo = 23 * 34 + 234;
     fill al , ol;
-    as ( al, olo, olo, ol );
+    ameno ( al, olo, olo, ol );
+    if ( 3 < 234 && 234 >= 123 )
+    {
+        print;
+    }
+    else{
+        print;
+    }
+    while ( 3 < 234 && 234 >= 123 )
+    {
+        print;
+    }
 }
 """
 
@@ -157,6 +168,6 @@ for test in tests:
     ParseTreeWalker().walk(listener,tree)
 
 count = 0
-for q in quadruples:
+for q in beexlSemantic.quadruples:
     print(count,q)
     count += 1

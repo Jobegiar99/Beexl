@@ -3,127 +3,108 @@ from email.policy import default
 from pickle import NONE
 from tkinter.font import names
 from collections import defaultdict
+from semanticCube import *
 
-nameStack = []
-valueStack = []
-typeStack = []
-jumpStack = []
-operandStack = defaultdict(lambda:[])
-operatorStack = defaultdict(lambda:[])
-temporalCount = 0
-tokenCount = 0
-operandDepth = 0
-function_table = defaultdict(lambda:{'variables':{}})
-current_scope = 'global'
-quadruples = []
-
-def validateVariable(name, type, current_scope):
-    if current_scope != "global":
-        if name in function_table[current_scope]['variables']:
-            if function_table[current_scope]['variables'][name]['type'] != type:
-                return (False,"TYPE")
-            return (True,None)
-    if name in function_table['global']['variables']:
-        return (function_table['global']['variables'][name]['type'] == type,"TYPE")
-    return (False,"NAME")
-
-def assignVectorAttributes(name,x,y,current_scope):
-    if current_scope != "global":
-        assignVectorAttributeHelper(name,x,y,current_scope)
-
-    assignVectorAttributeHelper(name,x,y,'global')
-    
-
-def assignVectorAttributeHelper(name,x,y,current_scope):
-    if name in function_table[current_scope]['variables']:
-            function_table[current_scope]['variables'][name]['x'] = x
-            function_table[current_scope]['variables'][name]['y'] = y
-            quadruples.append(" = vector(" + x + "," + y + ")\t" + name)
-
-def getVectorAttributes(name,current_scope):
-    if current_scope != "global":
-        result = getVectorAttributesHelperOne(name,current_scope,'variables')
-        if result != None:
-            return result
-
-    if current_scope not in ['global','main']:
-        result = getVectorAttributesHelperOne(name,current_scope,'parameters')
-        if result != None:
-            return result
-
-    result = getVectorAttributesHelperOne(name,'global','variables')
-    return result if result else None
-    
-
-def getVectorAttributesHelperOne(name,current_scope,place):
-    if name in function_table[current_scope][place]:
-        x = getAttributesHelper(name,current_scope,'variables','x')
-        y = getAttributesHelper(name,current_scope,'variables','y')
-        return (x,y) if x and y else None
+class BeexlSemantic():
 
 
+    def __init__(self):
+        self.typeStack = []
+        self.jumpStack = []
+        self.operandStack = defaultdict(lambda:[])
+        self.operatorStack = defaultdict(lambda:[])
+        self.temporalCount = 0
+        self.tokenCount = 0
+        self.operandDepth = 0
+        self.function_table = defaultdict(lambda:{'variables':{}})
+        self.current_scope = 'global'
+        self.quadruples = []
+        self.type_map = {'vector':'v','int':'int','float':'f','rgba':'r'}
 
-def assignRgbaAttributes(name,r,g,b,a,current_scope):
-    if name in function_table[current_scope]['variables']:
-        assignRgbaAttributesHelper(name,r,g,b,a,current_scope)
 
-    assignRgbaAttributesHelper(name,r,g,b,a,'global')
+    def getVariableInfo(self,name):
+        if self.current_scope != "global":
+            if name in self.function_table[self.current_scope]['variables']:
+                self.function_table[self.current_scope]['variables'][name]['scope'] = self.current_scope
+                return self.function_table[self.current_scope]['variables'][name]
 
-def assignRgbaAttributesHelper(name,r,g,b,a,current_scope):
-    if name in function_table[current_scope]['variables']:
-        function_table[current_scope]['variables'][name]['r'] = r
-        function_table[current_scope]['variables'][name]['g'] = g
-        function_table[current_scope]['variables'][name]['b'] = b
-        function_table[current_scope]['variables'][name]['a'] = a
-        quadruples.append(" = rgba(" + r + "," + g + ","+b+","+a+")\t" + name)
+            if "parameters" in self.function_table[self.current_scope]:
+                if name in self.function_table[self.current_scope]['parameters']:
+                    self.function_table[self.current_scope]['variables'][name]['scope'] = self.current_scope
+                    return self.function_table[self.current_scope]['parameters'][name]
 
-def getRGBAAttributes(name,current_scope):
-    if current_scope != "global":
-        result = getRGBAAttributesHelperOne(name,current_scope,'variables')
-        if result != None:
-            return result
+        if name in self.function_table['global']['variables']:
+            self.function_table['global']['variables'][name]['scope'] = 'global'
+            return self.function_table['global']['variables'][name]
 
-    if current_scope not in ['global','main']:
-        result = getRGBAAttributesHelperOne(name,current_scope,'parameters')
-        if result != None:
-            return result
+    def assignVectorAttributes(self,name,x,y):
+        vector = self.getVariableInfo(name)
+        if vector:
+            vector['x'],vector['y'] = x,y
+        else:
+            self.StopExecution("Vector does not exists")
 
-    result = getRGBAAttributesHelperOne(name,'global','variables')
-    return result if result else None
 
-def getRGBAAttributesHelperOne(name,current_scope,place):
-    if name in function_table[current_scope][place]:
-        r = getAttributesHelper(name,current_scope,'variables','r')
-        g = getAttributesHelper(name,current_scope,'variables','g')
-        b = getAttributesHelper(name,current_scope,'variables','b')
-        a = getAttributesHelper(name,current_scope,'variables','a')
-        return (r,g,b,a) if r and g and b and a else None
-
-def getAttributesHelper(name, current_scope, place, attribute):
-    if attribute in function_table[current_scope][place][name]:
-        return function_table[current_scope][place][name][attribute]
-
-def linearExpressionExitHelper(targetTokens: 'list[str]'):
-        global operatorOrder, operatorStack, typeStack,operandDepth,quadruples
-        if len(operatorStack[operandDepth]) == 0 or len(operandStack[operandDepth]) < 2:
-            return
+    def getVectorAttributes(self,name):
+        vector = self.getVariableInfo(name)
+        if vector:
+            if vector['x'] and vector['y']:
+                return (vector['x'],vector['y'])
+        self.stopExecution("Vector values not assigned")
         
-        if operatorStack[operandDepth][-1] not in targetTokens:
+
+    def assignRgbaAttributes(self,name,r,g,b,a):
+        rgba = self.getVariableInfo(name)
+        if rgba:
+            rgba['r'],rgba['g'],rgba['b'], rgba['a'] = r,g,b,a
+        else:
+            self.stopExecution("RGBA variable not defined")
+
+    def getRGBAAttributes(self,name):
+        rgba = self.getVariableInfo(name)
+        if rgba:
+            if rgba['r'] and rgba['g'] and rgba['b'] and rgba['a']:
+                return (rgba['r'],rgba['g'],rgba['b'],rgba['a'])
+
+        self.stopExecution("Vector values not assigned")
+
+
+    def linearExpressionExitHelper(self,targetTokens: 'list[str]'):
+        print(list(self.operatorStack.values()),targetTokens)
+        if (
+            len(self.operatorStack[self.operandDepth]) == 0 
+            or len(self.operandStack[self.operandDepth]) < 2
+            ):
             return
+        print("HERE")  
+        if self.operatorStack[self.operandDepth][-1] not in targetTokens:
+            return
+        print("HI")
+        self.linearExpressionQuadrupleHelper()
 
-        linearExpressionQuadrupleHelper()
+    def linearExpressionQuadrupleHelper(self):
+            temporalVariable = "temporal"
+            left_operand = self.operandStack[self.operandDepth].pop(-1)
+            left_type = self.typeStack.pop(-1)
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+            right_operand = self.operandStack[self.operandDepth].pop(-1)
+            right_type = self.typeStack.pop(-1)
 
-def linearExpressionQuadrupleHelper():
-        global operandStack,typeStack,temporalCount,operandDepth
-        temporalVariable = "t" + str(temporalCount)
-        temporalCount += 1
-        left_operand = operandStack[operandDepth].pop(-1)
-        #left_type = typeStack.pop(-1)
-        
-        right_operand = operandStack[operandDepth].pop(-1)
-        #right_type = typeStack.pop(-1)
+            operator = self.operatorStack[self.operandDepth].pop()
 
-        operator = operatorStack[operandDepth].pop()
-        quadruples.append(operator+ " " + right_operand+ " " + left_operand+" "+temporalVariable)
-        operandStack[operandDepth].append(temporalVariable)
-    
+            result = semanticCube[left_type][operator][right_type]
+            if result == BeeError:
+                self.stopExecution("Cannot perform operation due to type mismatch")
+
+            self.typeStack.append(result)
+            self.addQuadruple([operator, right_operand,left_operand,temporalVariable])
+            self.operandStack[self.operandDepth].append(temporalVariable)
+
+    def stopExecution(self,errorType):
+        print(errorType)
+        exit()
+
+    def addQuadruple(self,quadruple):
+        self.quadruples.append(quadruple)
+
+beexlSemantic = BeexlSemantic()
