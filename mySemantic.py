@@ -4,6 +4,7 @@ from pickle import NONE
 from tkinter.font import names
 from collections import defaultdict
 from semanticCube import *
+from memoryManager import memory
 
 class BeexlSemantic():
 
@@ -70,7 +71,6 @@ class BeexlSemantic():
 
 
     def linearExpressionExitHelper(self,targetTokens: 'list[str]'):
-        print(list(self.operatorStack.values()),targetTokens)
         if (
             len(self.operatorStack[self.operandDepth]) == 0 
             or len(self.operandStack[self.operandDepth]) < 2
@@ -81,24 +81,48 @@ class BeexlSemantic():
         self.linearExpressionQuadrupleHelper()
 
     def linearExpressionQuadrupleHelper(self):
-            #update this to memory instead of "temporal"
-            temporalVariable = "temporal"
-            #-----------------------
+
             left_operand = self.operandStack[self.operandDepth].pop(-1)
             left_type = self.typeStack.pop(-1)
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
             right_operand = self.operandStack[self.operandDepth].pop(-1)
             right_type = self.typeStack.pop(-1)
 
+            left_operand, right_operand = self.linearExpressionMemoryHelper(left_operand,right_operand)
+
             operator = self.operatorStack[self.operandDepth].pop()
 
             result = semanticCube[left_type][operator][right_type]
+
             if result == BeeError:
                 self.stopExecution("Cannot perform operation due to type mismatch")
+
+            temporalVariable = self.linearExpressionOperatorHelper(operator,result)
+            
+            if self.getVariableInfo(left_operand):
+                left_info = self.getVariableInfo(left_operand)
+                left_operand = left_info['memory']
+            
+            if self.getVariableInfo(right_operand):
+                right_info = self.getVariableInfo(right_operand)
+                right_operand = right_info['memory']
 
             self.typeStack.append(result)
             self.addQuadruple([operator, right_operand,left_operand,temporalVariable])
             self.operandStack[self.operandDepth].append(temporalVariable)
+
+    def linearExpressionMemoryHelper(self,left_operand,right_operand):
+        left_id = self.getVariableInfo(left_operand) if type(left_operand) != dict else left_operand
+        right_id = self.getVariableInfo(right_operand) if type(right_operand) != dict else right_operand
+        if left_id:
+            print(left_id,"LINEAR HELPER LEFT")
+        if right_id:
+            print(right_id,"LINEAR HELPER RIGHT")
+        return left_operand, right_operand
+
+    def linearExpressionOperatorHelper(self,operator,result):
+        data_type = "temp_" + result
+        return "temp_"+result+":"+str(memory.GetNewMemory(data_type))     
 
     def stopExecution(self,errorType):
         print(errorType)

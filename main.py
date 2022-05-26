@@ -5,11 +5,12 @@ from beexlListener import beexlListener
 from beexlParser import beexlParser
 from collections import defaultdict
 from mySemantic import *
+from VirtualMachine import virtualMachine
 """
 TO DO: add rules to handle special words with a parenthesis and no space
 """
 test_valid_1 = """
-filename create "beexl.jpg";
+filename create "beexl.png";
 canvas 123 , 23423 ;
 background rgba ( 10,12,14,12 ) ;
 
@@ -79,12 +80,12 @@ fun void main(){
 """
 
 test_valid_2 = """
-filename create "beexl.jpg";
+filename create "beexl.png";
 canvas 123, 123;
 background rgba (10,10,10,123 );
 var myVector: vector;
 
-fun void myXD (){
+fun void myXD ( ){
     myVector = vector ( 12 , 12 );
 }
 
@@ -119,9 +120,9 @@ fun void main () {
 
 
 test_valid_3 = """
-filename create "beexl.jpg";
-canvas 10 , 10 ;
-background rgba ( 10 , 12 , 14,12 ) ;
+filename create  "beexl.png";
+canvas 100 , 100 ;
+background rgba ( 10 , 12 , 14,10 ) ;
 
 var al: vector;
 var ol: rgba;
@@ -132,28 +133,38 @@ fun void ameno ( ert :vector , olo:int , eort : int , eorkgoekro : rgba ){
 }
 
 fun void main () {
-    al = vector ( 10 , 10123 );
-    ol = rgba ( 10, 1 , 12 , 69);
+    al = vector ( 2 , 2 );
+    ol = rgba ( 10, 1 , 12 , 255);
+    olo = 5;
+    fill al,ol;
+
+    al = vector ( 1 , 2 );
+    ol = rgba ( 10, 112 , 12 , 255);
+
+    fill al,ol;
     var olo : int;
     var A : int;
-    olo = 23 * 34 + 234;
+    
+    olo =  olo * 4 + (  3 + 4  ) * 34 + 234;
+
     fill al , ol;
+
     ameno ( al, olo, olo, ol );
+
     if ( 3 < 234 && 234 >= 123 )
     {
-        print;
+        olo = 2;
     }
-    else{
-        print;
+    else
+    {
+        olo = 3;
     }
     while ( 3 < 234 && 234 >= 123 )
     {
-        print;
+        olo = 4;
     }
 }
 """
-
-
 
 tests = [test_valid_3]
 
@@ -167,7 +178,8 @@ for test in tests:
     listener = beexlListener()
     ParseTreeWalker().walk(listener,tree)
 
-count = 0
-for q in beexlSemantic.quadruples:
-    print(count,q)
-    count += 1
+    for p in beexlSemantic.quadruples:
+        print(p)
+
+    virtualMachine.SetMachine(beexlSemantic.quadruples)
+    virtualMachine.ReadQuadruples()

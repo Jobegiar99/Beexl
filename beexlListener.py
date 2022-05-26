@@ -11,13 +11,14 @@ else:
     from beexlParser import beexlParser
 
 from mySemantic import BeexlSemantic, beexlSemantic
+from memoryManager import memory
 
 # This class defines a complete listener for a parse tree produced by beexlParser.
 class beexlListener(ParseTreeListener):
 
-    # Enter a parse tree produced by beexlParser#fileconfig0.
-    def enterFileconfig0(self, ctx:beexlParser.Fileconfig0Context):
-        beexlSemantic.quadruples.append(["GOTO","main"])
+    def enterBody0(self,ctx:beexlParser.Body0Context):
+        beexlSemantic.jumpStack.append(len(beexlSemantic.quadruples))
+        beexlSemantic.quadruples.append(["GOTO"])
 
     # Enter a parse tree produced by beexlParser#fileconfig1.
     def enterFileconfig1(self, ctx:beexlParser.Fileconfig1Context):
@@ -27,12 +28,18 @@ class beexlListener(ParseTreeListener):
     # Enter a parse tree produced by beexlParser#canvas0.
     def enterCanvas0(self, ctx:beexlParser.Canvas0Context):
         canvas_size = ctx.getText().split('canvas')[1].split(',')
-        beexlSemantic.quadruples.append(["CANVAS", canvas_size[0],canvas_size[1]])
+        beexlSemantic.quadruples.append(["CANVAS", tuple([int(canvas_size[0]),int(canvas_size[1][:-1])])])
 
     # Enter a parse tree produced by beexlParser#background0.
     def enterBackground0(self, ctx:beexlParser.Background0Context):
         rgba = ctx.getText().split('rgba')[1][:-1]
-        beexlSemantic.quadruples.append(["BACKGROUND " , rgba])
+        rgba = rgba.split(',')
+        rgba[0] = int(rgba[0][1:])
+        rgba[-1] = int(rgba[-1][:-1])
+        rgba[1] = int(rgba[1])
+        rgba[2] = int(rgba[2])
+
+        beexlSemantic.quadruples.append(["BACKGROUND " , tuple(rgba)])
 
     # Enter a parse tree produced by beexlParser#vars0.
     def enterVars0(self, ctx:beexlParser.Vars0Context):
@@ -40,12 +47,30 @@ class beexlListener(ParseTreeListener):
         var_name = var_info[0]
         var_type = beexlSemantic.type_map[var_info[1][:-1]]
         variable_data = beexlSemantic.getVariableInfo(var_name)
+
         if variable_data and variable_data['scope'] == beexlSemantic.current_scope:
             beexlSemantic.stopExecution( "Variable already defined:" + var_name)
         
         beexlSemantic.function_table[beexlSemantic.current_scope]\
                                                                          ["variables"]\
                                                                         [var_name] = {"type": var_type}
+
+        scope = 'global' if beexlSemantic.current_scope == 'global' else 'local'
+        data_type_for_memory = scope + '_' + var_type
+        memory_location = memory.GetNewMemory(data_type_for_memory)
+        t_value = data_type_for_memory + ":" + str(memory_location)
+
+        if scope == 'global':
+            beexlSemantic.function_table[scope]['variables'][var_name]['memory'] = memory_location
+            beexlSemantic.function_table[scope]['variables'][var_name]['memory_type'] = data_type_for_memory
+
+        elif var_name in beexlSemantic.function_table[beexlSemantic.current_scope]['variables']:
+            beexlSemantic.function_table[beexlSemantic.current_scope]['variables'][var_name]['memory'] = memory_location
+            beexlSemantic.function_table[beexlSemantic.current_scope]['variables'][var_name]['memory_type'] = data_type_for_memory
+
+        elif var_name in beexlSemantic.function_table[beexlSemantic.current_scope]['parameters']:
+            beexlSemantic.function_table[beexlSemantic.current_scope]['parameters'][var_name]['memory'] = memory_location
+            beexlSemantic.function_table[beexlSemantic.current_scope]['parameters'][var_name]['memory_type'] = data_type_for_memory
 
     # Enter a parse tree produced by beexlParser#while0.
     def enterWhile0(self, ctx:beexlParser.While0Context):
@@ -80,10 +105,11 @@ class beexlListener(ParseTreeListener):
             beexlSemantic.stopExecution("Undefined rgba for pixel fill:" + coord)
 
         vector = beexlSemantic.getVectorAttributes(coord)
+        vector = (int(vector[0]),int(vector[1]))
         rgba = beexlSemantic.getRGBAAttributes(color)
-        x,y = vector
-        
-        beexlSemantic.quadruples.append(["FILL", vector,color ])
+        rgba = (int(rgba[0]),int(rgba[1]),int(rgba[2]),int(rgba[3]))
+
+        beexlSemantic.quadruples.append(['fill', vector,rgba ])
 
     # Enter a parse tree produced by beexlParser#assignment0.
     def enterAssignment0(self, ctx:beexlParser.Assignment0Context):
@@ -102,23 +128,27 @@ class beexlListener(ParseTreeListener):
         var_info = beexlSemantic.getVariableInfo(variable_name)
         if not var_info:
             beexlSemantic.stopExecution("Error: Assignment of non-existent variable")
+
         if var_info['type'] != assign_type:
             beexlSemantic.stopExecution("Type mismatch in assignment of variable")
                 
         if assign_type == "v":
             vector_info = assignment_info[1].split('(')[1].split(')')[0].split(',')
             beexlSemantic.assignVectorAttributes(variable_name,vector_info[0],vector_info[1])
-            beexlSemantic.addQuadruple(["= ", tuple(vector_info) , variable_name])
+            beexlSemantic.addQuadruple(["= ", tuple(vector_info) ,\
+                 var_info['memory_type'] + ":" + str(var_info['memory'])])
 
         elif assign_type == 'r':
             rgba_info = assignment_info[1].split('(')[1].split(')')[0].split(',')
             beexlSemantic.assignRgbaAttributes(variable_name,rgba_info[0],rgba_info[1],rgba_info[2],rgba_info[3])
-            beexlSemantic.addQuadruple(["= ", tuple(rgba_info) , variable_name])
+            beexlSemantic.addQuadruple(["= ", tuple(rgba_info) , var_info['memory_type'] + ":" + str(var_info['memory'])])
 
         if len(beexlSemantic.operandStack[beexlSemantic.operandDepth]) == 0:
             return
 
-        beexlSemantic.addQuadruple(["= ", beexlSemantic.operandStack[beexlSemantic.operandDepth].pop() , assignment_info[0]])
+        beexlSemantic.addQuadruple(["= ", \
+            beexlSemantic.operandStack[beexlSemantic.operandDepth].pop() ,\
+                 var_info['memory_type'] + ":" + str(var_info['memory'])])
     
     # Enter a parse tree produced by beexlParser#print0.
     def enterPrint0(self, ctx:beexlParser.Print0Context):
@@ -169,7 +199,7 @@ class beexlListener(ParseTreeListener):
             beexlSemantic.quadruples[if_line] += [else_line + 1]
         else:
             if_line = beexlSemantic.jumpStack.pop()
-            beexlSemantic.quadruples[if_line] += [len(quadruples)]
+            beexlSemantic.quadruples[if_line] += [len(beexlSemantic.quadruples)]
 
     # Enter a parse tree produced by beexlParser#conditional1.
     def enterConditional2(self, ctx:beexlParser.Conditional2Context):
@@ -244,6 +274,10 @@ class beexlListener(ParseTreeListener):
         t_float = (str(ctx.getToken(62,0)),'f') if ctx.getToken(62,0) else None
         t_vector = (str(ctx.getToken(28,0)),'v') if ctx.getToken(28,0) else None
         t_rgba = (str(ctx.getToken(27,0)),'r') if ctx.getToken(27,0) else None
+
+        if not (t_id or t_number or t_float or t_vector or t_rgba):
+            return
+
         t_value, t_type = t_id or t_number or t_float or t_vector or t_rgba
 
         if t_value and not t_type:
@@ -253,8 +287,13 @@ class beexlListener(ParseTreeListener):
             return
         
         if t_id:
-            t_value = t_id['type']
-            
+            id_info = t_id[0]
+            if not 'type' in id_info:
+                beexlSemantic.stopExecution("Variable not declared")
+
+            t_value = id_info['memory_type'] + ":" + str(id_info["memory"])
+            t_type = id_info['type']
+
         beexlSemantic.operandStack[beexlSemantic.operandDepth] += [t_value]
         beexlSemantic.typeStack.append(t_type)
         
@@ -273,7 +312,7 @@ class beexlListener(ParseTreeListener):
     # Enter a parse tree produced by beexlParser#main0.
     def enterMain0(self, ctx:beexlParser.Main0Context):
         beexlSemantic.current_scope = "main"
-        beexlSemantic.quadruples[0] += [len(beexlSemantic.quadruples)]
+        beexlSemantic.quadruples[beexlSemantic.jumpStack.pop()] += [len(beexlSemantic.quadruples)]
 
     # Exit a parse tree produced by beexlParser#main0.
     def exitMain0(self, ctx:beexlParser.Main0Context):
@@ -318,6 +357,5 @@ class beexlListener(ParseTreeListener):
 
     def exitFunctionDefinition3(self, ctx:beexlParser.FunctionDefinition3Context):
         beexlSemantic.addQuadruple(["ENDFUNC"])
-
 
 del beexlParser
