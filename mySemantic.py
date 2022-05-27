@@ -7,8 +7,7 @@ from semanticCube import *
 from memoryManager import memory
 
 class BeexlSemantic():
-
-
+    
     def __init__(self):
         self.typeStack = []
         self.jumpStack = []
@@ -21,7 +20,6 @@ class BeexlSemantic():
         self.current_scope = 'global'
         self.quadruples = []
         self.type_map = {'vector':'v','int':'int','float':'f','rgba':'r'}
-
 
     def getVariableInfo(self,name):
         if self.current_scope != "global":
@@ -37,38 +35,6 @@ class BeexlSemantic():
         if name in self.function_table['global']['variables']:
             self.function_table['global']['variables'][name]['scope'] = 'global'
             return self.function_table['global']['variables'][name]
-
-    def assignVectorAttributes(self,name,x,y):
-        vector = self.getVariableInfo(name)
-        if vector:
-            vector['x'],vector['y'] = x,y
-        else:
-            self.StopExecution("Vector does not exists")
-
-
-    def getVectorAttributes(self,name):
-        vector = self.getVariableInfo(name)
-        if vector:
-            if vector['x'] and vector['y']:
-                return (vector['x'],vector['y'])
-        self.stopExecution("Vector values not assigned")
-        
-
-    def assignRgbaAttributes(self,name,r,g,b,a):
-        rgba = self.getVariableInfo(name)
-        if rgba:
-            rgba['r'],rgba['g'],rgba['b'], rgba['a'] = r,g,b,a
-        else:
-            self.stopExecution("RGBA variable not defined")
-
-    def getRGBAAttributes(self,name):
-        rgba = self.getVariableInfo(name)
-        if rgba:
-            if rgba['r'] and rgba['g'] and rgba['b'] and rgba['a']:
-                return (rgba['r'],rgba['g'],rgba['b'],rgba['a'])
-
-        self.stopExecution("Vector values not assigned")
-
 
     def linearExpressionExitHelper(self,targetTokens: 'list[str]'):
         if (

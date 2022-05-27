@@ -12,7 +12,7 @@ class MemoryManager:
     def AssignMemoryValue(self,data_type, memory_direction, value):
         lower_limit = self.memory_table[data_type]['LL']
         index = memory_direction - lower_limit
-        self.memory_table[data_type][index] = value
+        self.memory_table[data_type]['memory'][index] = value
         
     def GetMemoryValue(self,memory_direction, data_type):
         lower_limit = self.memory_table[data_type]['LL']
@@ -49,7 +49,8 @@ class MemoryManager:
         lower_limit = self.memory_table[data_type]['LL']
         memory_location = self.memory_table[data_type]['counter'] + lower_limit
         self.memory_table[data_type]['counter'] += self.memory_table[data_type]['counter_increment']
-        self.memory_table[data_type]['memory'].append(None)  
+        for iteration in range(self.memory_table[data_type]['counter_increment']):
+            self.memory_table[data_type]['memory'].append(None)  
         return memory_location 
 
     def GetNewMemoryHelper(self,data_type):

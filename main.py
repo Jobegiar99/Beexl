@@ -159,14 +159,38 @@ fun void main () {
     {
         olo = 3;
     }
-    while ( 3 < 234 && 234 >= 123 )
+    while ( 3 < 2 && 234 >= 123 )
     {
         olo = 4;
     }
 }
 """
 
-tests = [test_valid_3]
+test_valid_4 = """
+filename read "beexl.png";
+
+fun void main (){
+    var olo:int;
+    var elu: int;
+    var ele:rgba;
+    var ulu:vector;
+    olo = 4 ;
+    elu = olo * 2 + ( 10 / 2 );
+    ele = rgba ( 10 , 11 , 12  , 13 );
+    ulu = vector ( 14 , 15 );
+    if ( 13 * 23 < 14 + 12 ){
+        print;
+    }
+
+    while ( olo < 10){
+        olo = olo + 1 ;
+    }
+}
+
+
+"""
+
+tests = [test_valid_4]
 
 for test in tests:
     print("--------------")
@@ -183,3 +207,6 @@ for test in tests:
 
     virtualMachine.SetMachine(beexlSemantic.quadruples)
     virtualMachine.ReadQuadruples()
+
+    for key in memory.memory_table:
+        print(key,memory.memory_table[key])
