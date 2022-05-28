@@ -4,7 +4,7 @@ class MemoryManager:
 
     def __init__(self):
         self.memory_table = defaultdict( \
-            lambda: {"memory": [], "LL": 0, "UL":0, "cont":10} \
+            lambda: {"memory": [], "LL": 0, "UL":0, "counter":10} \
         ) 
 
         self.AssignMemoryTableValues()

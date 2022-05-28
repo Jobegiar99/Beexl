@@ -29,7 +29,7 @@ class BeexlSemantic():
 
             if "parameters" in self.function_table[self.current_scope]:
                 if name in self.function_table[self.current_scope]['parameters']:
-                    self.function_table[self.current_scope]['variables'][name]['scope'] = self.current_scope
+                    self.function_table[self.current_scope]['parameters'][name]['scope'] = self.current_scope
                     return self.function_table[self.current_scope]['parameters'][name]
 
         if name in self.function_table['global']['variables']:
