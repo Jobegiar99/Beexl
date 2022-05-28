@@ -1,5 +1,5 @@
 from PIL import Image,ImageShow
-
+from mySemantic import beexlSemantic
 class BeexlHelper():
 
     def __init__(self):
@@ -10,12 +10,15 @@ class BeexlHelper():
         self.filename = name
 
     def readImage(self,name):
-        self.canvas =  Image.open(name) 
-        if self.canvas.mode != "RGBA":
-                print("FILE MUST HAVE RGBA COLOR FORMAT")
-                exit()
-        self.filename = name
-
+        try:
+            self.canvas =  Image.open(name) 
+            if self.canvas.mode != "RGBA":
+                    beexlSemantic.stopExecution("FILE MUST HAVE RGBA COLOR FORMAT")
+ 
+            self.filename = name
+        except Exception as e:
+            beexlSemantic.stopExecution("File with name: " + name + " not found")
+            
     def fill(self,position,color):
         self.canvas.putpixel(position,color)
 
@@ -26,13 +29,4 @@ class BeexlHelper():
     def saveImage(self):
         self.canvas.save(self.filename)
     
-
 beexlHelper = BeexlHelper()
-beexlHelper.readImage("test.png")
-for x in range(beexlHelper.canvas.width):
-    for y in range(beexlHelper.canvas.height):
-        beexlHelper.fill((x,y),(x,y,x,255))
-beexlHelper.printImage()
-
-
-    
