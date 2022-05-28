@@ -132,15 +132,15 @@ filename read "beexl.png";
 
 var row: int;
 
-fun void ameno (  ){
+fun void ameno ( ol : int  ){
     var column : int;
     var coord : vector;
     var color : rgba;
-    column = 0;
+    column = 2 + ol ;
     if ( row < 80)
     {
         row = row + 1;
-        ameno (  ) ;
+        ameno ( ol ) ;
     }
     column = column - 1;
     coord = vector ( 10 , 10);
@@ -150,6 +150,7 @@ fun void ameno (  ){
         fill coord , color;
     }
 }
+
 
 fun void main (){
     var olo : int;
@@ -165,7 +166,7 @@ fun void main (){
         print;
     }
     fill ulu , ele ;
-    ameno ( );
+    ameno ( olo );
     print ;
     while ( olo < (olo / 2) + 4 ){
         olo = olo + 1 ;
@@ -192,6 +193,6 @@ for test in tests:
 
     virtualMachine.SetMachine(beexlSemantic.quadruples)
     virtualMachine.ReadQuadruples()
-
+    
     #for key in memory.memory_table:
     #    print(key,memory.memory_table[key])

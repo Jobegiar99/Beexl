@@ -28,7 +28,8 @@ class VirtualMachine:
             'GOTO':lambda info:self.GOTO(info[1]),
             'GOTO F': lambda info: self.GOTO_F(info),
             'GOSUB':lambda info: self.GOSUB(info),
-            'ENDFUNC': lambda info: self.stack.pop(-1)
+            'ENDFUNC': lambda info: self.stack.pop(-1),
+            'PARAM': lambda info: self.PARAM(info)
         }
 
         self.operationMap = {
@@ -61,7 +62,6 @@ class VirtualMachine:
 
             #debo quitar esto
             #max_iterations += 1
-        
 
     def Operation(self,left,right,target,operator):
         
@@ -147,5 +147,7 @@ class VirtualMachine:
 
         beexlHelper.fill((vector_x,vector_y),(rgba_r,rgba_g,rgba_b,rgba_a))
 
+    def PARAM(self,info):
+        self.Operation(info[1],info[2],None,'=')
 
 virtualMachine = VirtualMachine()         

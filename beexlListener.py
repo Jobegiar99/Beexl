@@ -296,6 +296,7 @@ class beexlListener(ParseTreeListener):
         t_value, t_type = t_id or t_number or t_float or t_vector or t_rgba
 
         if t_value and not t_type:
+            print(t_value)
             beexlSemantic.stopExecution("Variable not declared")
 
         if not t_value and  t_id and not 'value' in t_id:
@@ -303,11 +304,11 @@ class beexlListener(ParseTreeListener):
         
         if t_id:
             id_info = t_id[0]
-            if not 'type' in id_info:
+            if not 'memory' in id_info:
                 beexlSemantic.stopExecution("Variable not declared")
 
             t_value = id_info['memory']
-            t_type = id_info['type']
+            t_type = t_value.split(':')[0].split("_")[1]
 
         beexlSemantic.operandStack[beexlSemantic.operandDepth] += [t_value]
         beexlSemantic.typeStack.append(t_type)
