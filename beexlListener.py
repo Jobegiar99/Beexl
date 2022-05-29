@@ -16,9 +16,52 @@ from memoryManager import memory
 # This class defines a complete listener for a parse tree produced by beexlParser.
 class beexlListener(ParseTreeListener):
 
+    # Enter a parse tree produced by beexlParser#body0.
     def enterBody0(self,ctx:beexlParser.Body0Context):
         beexlSemantic.function_table['global']['main_line'] = len(beexlSemantic.quadruples)
         beexlSemantic.quadruples.append(["GOTO"])
+
+    def enterVector0(self,ctx:beexlParser.Vector0Context):
+        info = str(ctx.getText()).split('vector')[1].split(',')
+        beexlSemantic.checkSpecialDataType(info,2,"Vectors must have two values: x and y")
+        
+    # Enter a parse tree produced by beexlParser#vector1.
+    def enterVector1(self,ctx:beexlParser.Vector1Context):
+        beexlSemantic.restartStacks()
+        beexlSemantic.vector_index += 1
+
+    # Enter a parse tree produced by beexlParser#vector1.
+    def exitVector1(self,ctx:beexlParser.Vector1Context):
+        print("enter" , ctx.getText() )
+        if len(beexlSemantic.operandStack) > 0:
+            beexlSemantic.addQuadruple([\
+                beexlSemantic.vector_attribute[beexlSemantic.vector_index],\
+                beexlSemantic.operandStack[beexlSemantic.operandDepth].pop()\
+            ])
+            return
+
+        beexlSemantic.addQuadruple([\
+            beexlSemantic.vector_attribute[beexlSemantic.vector_index],\
+            str(ctx.getText())
+        ])
+
+    # Enter a parse tree produced by beexlParser#rgba1.
+    def enterRgba1(self,ctx:beexlParser.Rgba1Context):
+        beexlSemantic.restartStacks()
+        beexlSemantic.rgba_index += 1
+
+    # Enter a parse tree produced by beexlParser#rgba1.
+    def exitRgba1(self,ctx:beexlParser.Rgba1Context):
+        if len(beexlSemantic.operandStack) > 0:
+            beexlSemantic.addQuadruple([\
+                beexlSemantic.rgba_attribute[beexlSemantic.rgba_index],\
+                beexlSemantic.operandStack[beexlSemantic.operandDepth].pop()\
+            ])
+            return
+        beexlSemantic.addQuadruple([\
+                beexlSemantic.rgba_attribute[beexlSemantic.rgba_index],\
+                str(ctx.getText())
+            ])
 
     # Enter a parse tree produced by beexlParser#fileconfig1.
     def enterFileconfig1(self, ctx:beexlParser.Fileconfig1Context):
@@ -107,9 +150,9 @@ class beexlListener(ParseTreeListener):
 
     # Enter a parse tree produced by beexlParser#assignment0.
     def enterAssignment0(self, ctx:beexlParser.Assignment0Context):
-        beexlSemantic.operatorStack.clear()
-        beexlSemantic.operandStack.clear()
-        beexlSemantic.operandDepth = 0
+        beexlSemantic.restartStacks()
+        beexlSemantic.rgba_index = -1
+        beexlSemantic.vector_index = -1
             
     # Exit a parse tree produced by beexlParser#assignment0.
     def exitAssignment0(self, ctx:beexlParser.Assignment0Context):
@@ -127,11 +170,11 @@ class beexlListener(ParseTreeListener):
                 
         if assign_type == "v":
             vector_info = assignment_info[1].split('(')[1].split(')')[0].split(',')
-            beexlSemantic.addQuadruple(["=", tuple(vector_info) ,var_info['memory']])
+            beexlSemantic.addQuadruple(["v=",'x','y',var_info['memory']])
 
         elif assign_type == 'r':
             rgba_info = assignment_info[1].split('(')[1].split(')')[0].split(',')
-            beexlSemantic.addQuadruple(["=", tuple(rgba_info) , var_info['memory']])
+            beexlSemantic.addQuadruple(["c=",'r','g','b','a',var_info['memory']])
 
         if len(beexlSemantic.operandStack[beexlSemantic.operandDepth]) == 0:
             return
@@ -143,63 +186,6 @@ class beexlListener(ParseTreeListener):
     # Enter a parse tree produced by beexlParser#print0.
     def enterPrint0(self, ctx:beexlParser.Print0Context):
         beexlSemantic.addQuadruple([ctx.getText().split(';')[0]])
-
-    # Exit a parse tree produced by beexlParser#functionCall0.
-    def exitFunctionCall0(self, ctx:beexlParser.FunctionCall0Context):
-        call_info = ctx.getText().split('(')
-        function_name = call_info[0]
-
-        if function_name not in beexlSemantic.function_table:
-            beexlSemantic.stopExecution("Function not declared")
-
-        original_scope = beexlSemantic.current_scope
-        beexlSemantic.current_scope = function_name
-
-        parameters = call_info[1].split(')')[0]
-        beexlSemantic.addQuadruple(["ERA", function_name])
-        param_count = len(beexlSemantic.function_table[function_name]['parameters'])
-
-        if len(parameters) == 0:
-            if param_count != 0:
-                beexlSemantic.stopExecution("Wrong number of parameters given for function " + function_name )
-            beexlSemantic.addQuadruple(["GOSUB", beexlSemantic.function_table[function_name]['line']])
-            beexlSemantic.current_scope = original_scope
-            return
-        
-        parameters = parameters.split(',') if ',' in parameters else [parameters]
-        
-        
-        if param_count != len(parameters):
-            beexlSemantic.stopExecution("Wrong number of parameters given for function " + function_name )
-
-        function_parameters = beexlSemantic.function_table[function_name]['parameters']
-        function_param_keys = list(function_parameters.keys())
-        
-        for index in range(len(parameters)):
-
-            target_memory = function_parameters[function_param_keys[index]]['memory']
-
-            if parameters[index] not in ['0','1','2','3','4','5','6','7','8','9']:
-                for scope in [original_scope,function_name]:
-                    beexlSemantic.current_scope = scope
-                    variable_info = beexlSemantic.getVariableInfo(parameters[index])
-                    if variable_info:
-                        break
-
-                if not variable_info:
-                    beexlSemantic.stopExecution("Trying to pass a non existent variable as a parameter: " + parameters[index])
-
-                data_type_parameter = variable_info['memory'].split(':')[0]
-                expected_data_type =  target_memory.split(':')[0]
-
-                if data_type_parameter != expected_data_type:
-                    beexlSemantic.stopExecution("Wrong data type for parameter")
-            
-                beexlSemantic.addQuadruple(["PARAM", variable_info['memory'] , target_memory  ])
-
-        beexlSemantic.addQuadruple(["GOSUB", beexlSemantic.function_table[function_name]['line']])
-        beexlSemantic.current_scope = original_scope
-
 
     # Enter a parse tree produced by beexlParser#conditional0.
     def enterConditional1(self, ctx:beexlParser.Conditional1Context):
@@ -282,9 +268,9 @@ class beexlListener(ParseTreeListener):
 
     # Exit a parse tree sproduced by beexlParser#factor0.
     def exitFactor0(self, ctx:beexlParser.Factor0Context):
-        global typeStack,operandStack,operandDepth
-        t_id =  beexlSemantic.getVariableInfo(str(ctx.getToken(64,0)))
-        t_id = (t_id,'id') if t_id else None
+        
+        t_id =  beexlSemantic.getVariableInfo(ctx.getText())
+        t_id = (t_id,'id') if t_id != None else None
         t_number = (int(str(ctx.getToken(61,0))),'int') if ctx.getToken(61,0) else None
         t_float = (float(str(ctx.getToken(62,0))),'f') if ctx.getToken(62,0) else None
         t_vector = (str(ctx.getToken(28,0)),'v') if ctx.getToken(28,0) else None
@@ -294,12 +280,10 @@ class beexlListener(ParseTreeListener):
             return
 
         t_value, t_type = t_id or t_number or t_float or t_vector or t_rgba
-
         if t_value and not t_type:
-            print(t_value)
             beexlSemantic.stopExecution("Variable not declared")
 
-        if not t_value and  t_id and not 'value' in t_id:
+        if ( not (t_value or not t_id) ) and (t_id and not 'memory' in t_id):
             return
         
         if t_id:
@@ -381,6 +365,7 @@ class beexlListener(ParseTreeListener):
 
     def exitFunctionDefinition0(self,ctx:beexlParser.FunctionDefinition0Context):
         beexlSemantic.current_scope = 'global'
+    
     # Exit a parse tree produced by beexlParser#functionDefinition2.
     def exitFunctionDefinition2(self, ctx:beexlParser.FunctionDefinition2Context):
         if not ':' in ctx.getText():
@@ -396,5 +381,50 @@ class beexlListener(ParseTreeListener):
 
     def exitFunctionDefinition3(self, ctx:beexlParser.FunctionDefinition3Context):
         beexlSemantic.addQuadruple(["ENDFUNC"])
+
+    # Exit a parse tree produced by beexlParser#functionCall0.
+    def enterFunctionCall0(self, ctx:beexlParser.FunctionCall0Context):
+        beexlSemantic.restartStacks()
+        beexlSemantic.operandDepth = 0
+        beexlSemantic.param_index = -1
+        call_info = ctx.getText().split('(')
+        function_name = call_info[0]
+
+        if function_name not in beexlSemantic.function_table:
+            beexlSemantic.stopExecution("Function not declared")
+
+        beexlSemantic.current_function = function_name
+        beexlSemantic.current_parameters = list(beexlSemantic.function_table[function_name]['parameters'].values())
+
+        beexlSemantic.addQuadruple(["ERA", function_name])
+            
+    def exitFunctionCall0(self,ctx:beexlParser.FunctionCall0Context):
+        beexlSemantic.addQuadruple(["GOSUB", beexlSemantic.function_table[beexlSemantic.current_function]['line']])
+        if len(beexlSemantic.current_parameters) - 1 > beexlSemantic.param_index:
+            beexlSemantic.stopExecution("Wrong number of parameters for function " + beexlSemantic.current_function)
+        
+    # Enter a parse tree produced by beexlParser#vector1.
+    def enterFunctionCall2(self,ctx:beexlParser.FunctionCall2Context):
+        beexlSemantic.param_index += 1
+
+    # Enter a parse tree produced by beexlParser#vector1.
+    def exitFunctionCall2(self,ctx:beexlParser.FunctionCall2Context):
+
+        if beexlSemantic.param_index >= len(beexlSemantic.current_parameters):
+            beexlSemantic.stopExecution("Wrong number of parameters for function " + beexlSemantic.current_function)
+  
+        parameter = beexlSemantic.current_parameters[beexlSemantic.param_index]['memory']
+        param_type = parameter.split(':')[0].split('_')[1]
+        if len(beexlSemantic.operandStack) > 0:
+            left= beexlSemantic.operandStack[beexlSemantic.operandDepth].pop()
+            beexlSemantic.addQuadruple(['PARAM',left,parameter])
+            return
+        beexlSemantic.addQuadruple([\
+                beexlSemantic.vector_attribute[beexlSemantic.vector_index],\
+                str(ctx.getText())
+            ])
+
+    def enterAwait0(self,ctx:beexlParser.Await0Context):
+        beexlSemantic.addQuadruple(["await",int(ctx.getText().split('await')[1][:-1])])
 
 del beexlParser

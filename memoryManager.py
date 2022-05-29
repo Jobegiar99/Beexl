@@ -49,7 +49,7 @@ class MemoryManager:
         lower_limit = self.memory_table[data_type]['LL']
         memory_location = self.memory_table[data_type]['counter'] + lower_limit
         self.memory_table[data_type]['counter'] += self.memory_table[data_type]['counter_increment']
-        for iteration in range(self.memory_table[data_type]['counter_increment']):
+        for _ in range(self.memory_table[data_type]['counter_increment']):
             self.memory_table[data_type]['memory'].append(None)  
         return memory_location 
 

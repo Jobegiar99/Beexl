@@ -20,6 +20,13 @@ class BeexlSemantic():
         self.current_scope = 'global'
         self.quadruples = []
         self.type_map = {'vector':'v','int':'int','float':'f','rgba':'r'}
+        self.vector_attribute = ['x','y']
+        self.vector_index = -1
+        self.rgba_attribute = ['r','g','b','a']
+        self.rgba_index = -1
+        self.current_function = ""
+        self.param_index = -1
+        self.current_parameters = {}
 
     def getVariableInfo(self,name):
         if self.current_scope != "global":
@@ -47,44 +54,32 @@ class BeexlSemantic():
         self.linearExpressionQuadrupleHelper()
 
     def linearExpressionQuadrupleHelper(self):
-
-            left_operand = self.operandStack[self.operandDepth].pop(-1)
-            left_type = self.typeStack.pop(-1)
+        left_operand = self.operandStack[self.operandDepth].pop(-1)
+        left_type = self.typeStack.pop(-1)
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
-            right_operand = self.operandStack[self.operandDepth].pop(-1)
-            right_type = self.typeStack.pop(-1)
+        right_operand = self.operandStack[self.operandDepth].pop(-1)
+        right_type = self.typeStack.pop(-1)
 
-            left_operand, right_operand = self.linearExpressionMemoryHelper(left_operand,right_operand)
+        operator = self.operatorStack[self.operandDepth].pop()
 
-            operator = self.operatorStack[self.operandDepth].pop()
+        result = semanticCube[left_type][operator][right_type]
 
-            result = semanticCube[left_type][operator][right_type]
+        if result == BeeError:
+            self.stopExecution("Cannot perform operation due to type mismatch")
 
-            if result == BeeError:
-                self.stopExecution("Cannot perform operation due to type mismatch")
-
-            temporalVariable = self.linearExpressionOperatorHelper(operator,result)
+        temporalVariable = self.linearExpressionOperatorHelper(operator,result)
             
-            if self.getVariableInfo(left_operand):
-                left_info = self.getVariableInfo(left_operand)
-                left_operand = left_info['memory']
+        if self.getVariableInfo(left_operand):
+            left_info = self.getVariableInfo(left_operand)
+            left_operand = left_info['memory']
             
-            if self.getVariableInfo(right_operand):
-                right_info = self.getVariableInfo(right_operand)
-                right_operand = right_info['memory']
+        if self.getVariableInfo(right_operand):
+            right_info = self.getVariableInfo(right_operand)
+            right_operand = right_info['memory']
 
-            self.typeStack.append(result)
-            self.addQuadruple([operator, right_operand,left_operand,temporalVariable])
-            self.operandStack[self.operandDepth].append(temporalVariable)
-
-    def linearExpressionMemoryHelper(self,left_operand,right_operand):
-        left_id = self.getVariableInfo(left_operand) if type(left_operand) != dict else left_operand
-        right_id = self.getVariableInfo(right_operand) if type(right_operand) != dict else right_operand
-        if left_id:
-            print(left_id,"LINEAR HELPER LEFT")
-        if right_id:
-            print(right_id,"LINEAR HELPER RIGHT")
-        return left_operand, right_operand
+        self.typeStack.append(result)
+        self.addQuadruple([operator, right_operand,left_operand,temporalVariable])
+        self.operandStack[self.operandDepth].append(temporalVariable)
 
     def linearExpressionOperatorHelper(self,operator,result):
         data_type = "temp_" + result
@@ -96,5 +91,19 @@ class BeexlSemantic():
 
     def addQuadruple(self,quadruple):
         self.quadruples.append(quadruple)
+
+    def restartStacks(self):
+        self.operatorStack.clear()
+        self.operandStack.clear()
+        self.typeStack.clear()
+        self.operandDepth = 0
+
+    def checkSpecialDataType(self,info,length, error_message):
+        if len(info) != length:
+            self.stopExecution(error_message)
+
+        for elem in info:
+            if elem in ['(',')']:
+                self.stopExecution(error_message)     
 
 beexlSemantic = BeexlSemantic()

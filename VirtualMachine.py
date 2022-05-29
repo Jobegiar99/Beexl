@@ -1,6 +1,7 @@
 from memoryManager import MemoryManager, memory
 from beexlHelper import BeexlHelper, beexlHelper
 from mySemantic import beexlSemantic
+import time
 
 class VirtualMachine:
     def __init__(self):
@@ -29,7 +30,17 @@ class VirtualMachine:
             'GOTO F': lambda info: self.GOTO_F(info),
             'GOSUB':lambda info: self.GOSUB(info),
             'ENDFUNC': lambda info: self.stack.pop(-1),
-            'PARAM': lambda info: self.PARAM(info)
+            'PARAM': lambda info: self.PARAM(info),
+            'ENDPROGRAM': lambda info: beexlHelper.saveImage(),
+            'x': lambda info: self.GraphicMapHelper('x',info[1]),
+            'y': lambda info: self.GraphicMapHelper('y',info[1]),
+            'r': lambda info: self.GraphicMapHelper('r',info[1]),
+            'g': lambda info: self.GraphicMapHelper('g',info[1]),
+            'b': lambda info: self.GraphicMapHelper('b',info[1]),
+            'a': lambda info: self.GraphicMapHelper('a',info[1]),
+            'v=': lambda info: self.GraphicAssign('v',info[-1]),
+            'c=': lambda info: self.GraphicAssign('c',info[-1]),
+            'await':lambda info: time.sleep(info[1]/ 1000)
         }
 
         self.operationMap = {
@@ -47,6 +58,14 @@ class VirtualMachine:
             '||':lambda x,y: x or y
         }
 
+        self.graphicMap = {
+            'x': None,
+            'y': None,
+            'r': None,
+            'g': None,
+            'b': None,
+            'a': None
+        }
 
     def SetMachine(self,quadruples):
         self.quadruples = quadruples
@@ -62,9 +81,9 @@ class VirtualMachine:
 
             #debo quitar esto
             #max_iterations += 1
+        print(self.graphicMap)
 
-    def Operation(self,left,right,target,operator):
-        
+    def Operation(self,left,right,target,operator):  
         current_memory = self.stack[-1][1]
         if operator in ['+','-','*','/','<','>','<=','>=','==','!=',"&&","||"]:
             var_info_target = target.split(':')
@@ -108,7 +127,7 @@ class VirtualMachine:
         if value == None:
             beexlSemantic.stopExecution("Value not assigned to variable: " + place)
         
-        return value
+        return int(value) if 'int' in data_type else value
 
     def CreateHelper(self,filename):
         self.stack[0] += 1
@@ -135,19 +154,44 @@ class VirtualMachine:
     def Fill(self,vector,rgba):
         vector_direction = int(vector.split(":")[1])
         rgba_direction = int(rgba.split(":")[1])
-
-        vector_x = memory.GetMemoryValue(vector_direction, vector.split(":")[0])
-        vector_y = memory.GetMemoryValue(vector_direction + 1, vector.split(":")[0])
-        rgba_r = memory.GetMemoryValue(rgba_direction,rgba.split(":")[0])
-        rgba_g = memory.GetMemoryValue(rgba_direction + 1,rgba.split(":")[0])
-        rgba_b = memory.GetMemoryValue(rgba_direction + 2,rgba.split(":")[0])
-        rgba_a = memory.GetMemoryValue(rgba_direction + 3,rgba.split(":")[0])
-        if not vector_x or not vector_y or not rgba_r or not rgba_g or not rgba_b or not rgba_a:
-            beexlSemantic.stopExecution("Error in fill: vector or rgba rgkerigerg")
+        data_type_vector = vector.split(":")[0]
+        data_type_rgba = rgba.split(":")[0]
+        vector_x = memory.GetMemoryValue(vector_direction, data_type_vector)
+        vector_y = memory.GetMemoryValue(vector_direction + 1, data_type_vector)
+        rgba_r = memory.GetMemoryValue(rgba_direction, data_type_rgba )
+        rgba_g = memory.GetMemoryValue(rgba_direction + 1,data_type_rgba)
+        rgba_b = memory.GetMemoryValue(rgba_direction + 2,data_type_rgba)
+        rgba_a = memory.GetMemoryValue(rgba_direction + 3,data_type_rgba)
+        if vector_x == None or vector_y == None or rgba_r == None or rgba_g == None or rgba_b == None or rgba_a == None:
+            beexlSemantic.stopExecution("Error in fill")
 
         beexlHelper.fill((vector_x,vector_y),(rgba_r,rgba_g,rgba_b,rgba_a))
 
     def PARAM(self,info):
         self.Operation(info[1],info[2],None,'=')
+
+    def GraphicMapHelper(self, place, value): 
+        if value in ['MAX_RED','MAX_BLUE','MAX_GREEN','MAX_ALPHA']:
+            value = 255
+        
+        if value in ['IMAGE_WIDTH','IMAGE_HEIGHT']:
+            value = beexlHelper.canvas.width if value == 'IMAGE_WIDTH' else beexlHelper.canvas.height
+
+        if ':' in str(value):
+            info = value.split(":")
+            data_type,memory_place = info[0],int(info[1])
+            value = self.stack[-1][1].GetMemoryValue(memory_place,data_type)
+            if value == None:
+                beexlSemantic.stopExecution( \
+                    "Trying to assign " + str(place) + " attribute with a variable " + \
+                    "that has not been assigned a value")
+        self.graphicMap[place] = int(value)
+
+    def GraphicAssign(self,graphic_type,place):
+        info = place.split(':')
+        data_type, memory_place = info[0], int(info[1]) 
+        attributes = ['r','g','b','a'] if graphic_type == 'c'else ['x','y']
+        for i in range(len(attributes)):
+            self.stack[-1][1].AssignMemoryValue(data_type,memory_place + i,self.graphicMap[attributes[i]])
 
 virtualMachine = VirtualMachine()         

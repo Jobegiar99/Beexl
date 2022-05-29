@@ -11,11 +11,11 @@ background0:BACKGROUND rgba0';';
 type0:VECTOR|RGBA|INT|FLOAT;
 
 rgba0:RGBA'('rgba1','rgba1','rgba1','rgba1')';
-rgba1:cExtras0|NUMBER;
+rgba1:cExtras0|exp0;
 cExtras0: (MAX_RED|MAX_BLUE|MAX_GREEN|MAX_ALPHA);
 
 vector0:VECTOR'('vector1','vector1')';
-vector1:NUMBER|vExtras0;
+vector1:vExtras0|exp0;
 vExtras0:CANVAS_HEIGHT|CANVAS_WIDTH;
 
 vars0:VAR ID':'type0';';
@@ -25,7 +25,9 @@ instruction0:(extras0|conditional0|while0);
 while0: WHILE'('hyperExp0')'while1;
 while1:'{'extras0+'}';
 
-extras0:pixelFill0|assignment0|print0|functionCall0;
+extras0:pixelFill0|assignment0|print0|functionCall0|await0;
+
+await0: AWAIT NUMBER';';
 
 pixelFill0:FILL(ID|vector0)','(ID|rgba0)';';
 
@@ -33,7 +35,9 @@ assignment0:ID'='(hyperExp0| vector0 | rgba0)';';
 
 print0: PRINT';';
 
-functionCall0: ID'('((ID(','ID)*))*')'';';
+functionCall0:ID'('functionCall2*')'';';
+functionCall1:functionCall2(','functionCall2)*;
+functionCall2:exp0;
 
 conditional0: IF'('hyperExp0')'conditional1;
 conditional1:'{'extras0*'}'conditional2?;
@@ -52,9 +56,10 @@ term0:factor0 term1?;
 term1: ('/'|'*')term0;
 
 factor0:ID
-                   |NUMBER
-                   |DECIMAL_NUMBER
-                   |expressionRestart0;
+        |NUMBER
+        |DECIMAL_NUMBER
+        |expressionRestart0;
+       
 expressionRestart0:'('hyperExp0')';
 
 vectorAttribute0:ID'.'(X|Y);
@@ -74,6 +79,7 @@ functionDefinition1:type0|VOID;
 
 functionDefinition2:ID':'type0','|ID':'type0;
 functionDefinition3:block0;
+
 
 WS : [ \t\r\n]+ -> skip ;
 FILENAME : 'filename';
@@ -95,6 +101,7 @@ MAX_BLUE:'MAX_BLUE';
 MAX_GREEN:'MAX_GREEN';
 MAX_ALPHA:'MAX_ALPHA';
 FILL:'fill';
+AWAIT:'await';
 PNG: '.png';
 JPG: '.jpg';
 JPEG: '.jpeg';

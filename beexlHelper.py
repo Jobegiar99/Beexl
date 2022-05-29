@@ -1,5 +1,6 @@
 from PIL import Image,ImageShow
 from mySemantic import beexlSemantic
+import psutil
 class BeexlHelper():
 
     def __init__(self):
@@ -20,11 +21,12 @@ class BeexlHelper():
             beexlSemantic.stopExecution("File with name: " + name + " not found")
             
     def fill(self,position,color):
+        #print(position,color)
         self.canvas.putpixel(position,color)
 
     def printImage(self):
-        self.saveImage()
-        self.canvas.show(title=self.filename)
+        copy = self.canvas.resize((self.canvas.width * 5, self.canvas.height * 5))
+        copy.show(title="PRINT")
 
     def saveImage(self):
         self.canvas.save(self.filename)

@@ -130,27 +130,48 @@ fun void main (){
 test_valid_5 = """
 filename read "beexl.png";
 
+var color: rgba;
+var dot: rgba;
+var previous: vector;
+var current: vector;
+var increment: int;
 var row: int;
 
-fun void ameno ( ol : int  ){
-    var column : int;
-    var coord : vector;
-    var color : rgba;
-    column = 2 + ol ;
-    if ( row < 80)
-    {
-        row = row + 1;
-        ameno ( ol ) ;
-    }
-    column = column - 1;
-    coord = vector ( 10 , 10);
-    color = rgba ( 10 , 20 , 30 , 40);
-    while ( column < 90){
-        column = column + 1;
-        fill coord , color;
+fun void ameno (  ) {
+    fill previous , color;
+    fill current , dot;
+    previous = vector ( row  , 20 );
+    row = row + increment;
+    current = vector ( row , 20 );
+    print ;
+    if ( ( increment == 1 && row < 100 ) || ( increment == -1 && row > 0 )  ){
+        ameno ( ) ;
     }
 }
 
+
+fun void main (){
+    var iterations : int;
+    iterations = 0 ;
+    row = 4;
+    color = rgba ( MAX_RED , 225 , 120, 255 ) ;
+    dot = rgba ( MAX_RED , 0 , 0 , MAX_ALPHA );
+    previous = vector ( 0 , 2 );
+    current = vector ( 0 , 2 );
+    while ( iterations < 100  ){
+        increment = 1;
+        ameno ();
+        increment = -1;
+        ameno ();
+        iterations = iterations + 1;
+    }
+}
+"""
+
+test_valid_6 = """
+filename read "beexl.png";
+
+var row: int;
 
 fun void main (){
     var olo : int;
@@ -159,19 +180,16 @@ fun void main (){
     var ulu : vector;
     row = 0;
     olo = 4 ;
-    elu = olo * 2 + ( 10 / 2  + ( 14 * ( 2 / 2 )));
-    ele = rgba ( 255 , 255 , 255  , 255 );
-    ulu = vector ( 14 , 15 );
-    if ( 13 * 23 < 14 + 12 ){
-        print;
-    }
-    fill ulu , ele ;
-    ameno ( olo );
-    print ;
-    while ( olo < (olo / 2) + 4 ){
-        olo = olo + 1 ;
-    }
+    elu = olo ;
+    ele = rgba ( 255 , 255 ,  325 , 255 );
+    ulu = vector ( olo , olo * 2 + 3 + 4 + 5 + 6 + 7 + 8 ) ;
+    var first: int;
+    var second:int;
+    print;
+    await 1000 ;
+    print;
 }
+
 """
 
 tests = [test_valid_5]
