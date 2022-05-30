@@ -32,12 +32,12 @@ class VirtualMachine:
             'ENDFUNC': lambda info: self.stack.pop(-1),
             'PARAM': lambda info: self.PARAM(info),
             'ENDPROGRAM': lambda info: beexlHelper.saveImage(),
-            'x': lambda info: self.GraphicMapHelper('x',info[1]),
-            'y': lambda info: self.GraphicMapHelper('y',info[1]),
-            'r': lambda info: self.GraphicMapHelper('r',info[1]),
-            'g': lambda info: self.GraphicMapHelper('g',info[1]),
-            'b': lambda info: self.GraphicMapHelper('b',info[1]),
-            'a': lambda info: self.GraphicMapHelper('a',info[1]),
+            'x': lambda info: self.GraphicMapHelper('x',info[1], info[2]),
+            'y': lambda info: self.GraphicMapHelper('y',info[1],info[2]),
+            'r': lambda info: self.GraphicMapHelper('r',info[1],info[2]),
+            'g': lambda info: self.GraphicMapHelper('g',info[1],info[2]),
+            'b': lambda info: self.GraphicMapHelper('b',info[1],info[2]),
+            'a': lambda info: self.GraphicMapHelper('a',info[1],info[2]),
             'v=': lambda info: self.GraphicAssign('v',info[-1]),
             'c=': lambda info: self.GraphicAssign('c',info[-1]),
             'await':lambda info: time.sleep(info[1]/ 1000)
@@ -170,7 +170,7 @@ class VirtualMachine:
     def PARAM(self,info):
         self.Operation(info[1],info[2],None,'=')
 
-    def GraphicMapHelper(self, place, value): 
+    def GraphicMapHelper(self, place, value, address):
         if value in ['MAX_RED','MAX_BLUE','MAX_GREEN','MAX_ALPHA']:
             value = 255
         
@@ -185,7 +185,17 @@ class VirtualMachine:
                 beexlSemantic.stopExecution( \
                     "Trying to assign " + str(place) + " attribute with a variable " + \
                     "that has not been assigned a value")
-        self.graphicMap[place] = int(value)
+            if address:
+                data_type_adr = address.split(':')[0]
+                memory_place_adr = int(address.split(':')[1])
+                self.stack[-1][1].AssignMemoryValue(data_type_adr,memory_place_adr,value)
+            else:
+                self.graphicMap[place] = int(value)
+        elif address:
+            data_type = address.split(':')[0]
+            memory_place = int(address.split(':')[1])
+            self.stack[-1][1].AssignMemoryValue(data_type,memory_place,value)
+        
 
     def GraphicAssign(self,graphic_type,place):
         info = place.split(':')

@@ -25,13 +25,20 @@ instruction0:(extras0|conditional0|while0);
 while0: WHILE'('hyperExp0')'while1;
 while1:'{'extras0+'}';
 
-extras0:pixelFill0|assignment0|print0|functionCall0|await0;
+extras0:pixelFill0
+        |assignment0
+        |print0
+        |functionCall0
+        |specialAssignment0
+        |await0;
 
 await0: AWAIT NUMBER';';
 
-pixelFill0:FILL(ID|vector0)','(ID|rgba0)';';
+pixelFill0:FILL(ID|vector0)','(ID|rgba0)';'; //change to vector assignment and rgba assignment
 
 assignment0:ID'='(hyperExp0| vector0 | rgba0)';'; 
+
+specialAssignment0: (rgbaAttribute0|vectorAttribute0)'='(exp0)';';
 
 print0: PRINT';';
 
@@ -58,7 +65,10 @@ term1: ('/'|'*')term0;
 factor0:ID
         |NUMBER
         |DECIMAL_NUMBER
+        |vectorAttribute0
+        |rgbaAttribute0
         |expressionRestart0;
+       
        
 expressionRestart0:'('hyperExp0')';
 

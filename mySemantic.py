@@ -63,8 +63,9 @@ class BeexlSemantic():
         operator = self.operatorStack[self.operandDepth].pop()
 
         result = semanticCube[left_type][operator][right_type]
-
         if result == BeeError:
+            print(left_operand,operator,right_operand)
+            print(left_type, operator, right_type)
             self.stopExecution("Cannot perform operation due to type mismatch")
 
         temporalVariable = self.linearExpressionOperatorHelper(operator,result)

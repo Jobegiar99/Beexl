@@ -160,9 +160,11 @@ fun void main (){
     current = vector ( 0 , 2 );
     while ( iterations < 100  ){
         increment = 1;
-        ameno ();
         increment = -1;
-        ameno ();
+        color.r = 4;
+        color.g = 2;
+        color.b = 4;
+        color.a = 123 + color.r - 123;
         iterations = iterations + 1;
     }
 }
@@ -192,6 +194,16 @@ fun void main (){
 
 """
 
+
+test_valid_7 = """
+filename read "beexl.png"
+
+fun void main () {
+    var al: vector;
+    al: 
+}
+
+"""
 tests = [test_valid_5]
 
 for test in tests:

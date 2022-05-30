@@ -32,17 +32,17 @@ class beexlListener(ParseTreeListener):
 
     # Enter a parse tree produced by beexlParser#vector1.
     def exitVector1(self,ctx:beexlParser.Vector1Context):
-        print("enter" , ctx.getText() )
         if len(beexlSemantic.operandStack) > 0:
             beexlSemantic.addQuadruple([\
                 beexlSemantic.vector_attribute[beexlSemantic.vector_index],\
-                beexlSemantic.operandStack[beexlSemantic.operandDepth].pop()\
+                beexlSemantic.operandStack[beexlSemantic.operandDepth].pop(),\
+                None\
             ])
             return
 
         beexlSemantic.addQuadruple([\
             beexlSemantic.vector_attribute[beexlSemantic.vector_index],\
-            str(ctx.getText())
+            str(ctx.getText()),None
         ])
 
     # Enter a parse tree produced by beexlParser#rgba1.
@@ -55,12 +55,14 @@ class beexlListener(ParseTreeListener):
         if len(beexlSemantic.operandStack) > 0:
             beexlSemantic.addQuadruple([\
                 beexlSemantic.rgba_attribute[beexlSemantic.rgba_index],\
-                beexlSemantic.operandStack[beexlSemantic.operandDepth].pop()\
+                beexlSemantic.operandStack[beexlSemantic.operandDepth].pop(),\
+                None
             ])
             return
         beexlSemantic.addQuadruple([\
                 beexlSemantic.rgba_attribute[beexlSemantic.rgba_index],\
-                str(ctx.getText())
+                str(ctx.getText()),
+                None
             ])
 
     # Enter a parse tree produced by beexlParser#fileconfig1.
@@ -183,6 +185,29 @@ class beexlListener(ParseTreeListener):
             beexlSemantic.operandStack[beexlSemantic.operandDepth].pop() ,\
                  var_info['memory']])
     
+    # Exit a parse tree produced by beexlParser#soecialAssignment0.
+    def enterSpecialAssignment0(self, ctx:beexlParser.SpecialAssignment0Context):
+        beexlSemantic.restartStacks()
+
+    def exitSpecialAssignment0(self, ctx:beexlParser.SpecialAssignment0Context):
+        info = ctx.getText().split('=')
+        assign_info = info[0].split('.')
+        attribute = assign_info[1]
+        attribute_id = assign_info[0]
+        variable_info = beexlSemantic.getVariableInfo(attribute_id)
+        assignment = beexlSemantic.operandStack[beexlSemantic.operandDepth].pop()
+
+        if not variable_info:
+            beexlSemantic.stopExecution("Trying to use a non-existent id")
+        
+        if variable_info['memory'].split(':')[0].split('_')[1] not in ['v','r']:
+            beexlSemantic.stopExecution("Attribute assignment expecting vector or rgba")
+        
+        if beexlSemantic.typeStack[-1] != 'int':
+            beexlSemantic.stopExecution("Attributes must be integers")
+
+        beexlSemantic.addQuadruple([attribute,assignment,variable_info['memory']])
+
     # Enter a parse tree produced by beexlParser#print0.
     def enterPrint0(self, ctx:beexlParser.Print0Context):
         beexlSemantic.addQuadruple([ctx.getText().split(';')[0]])
@@ -268,32 +293,52 @@ class beexlListener(ParseTreeListener):
 
     # Exit a parse tree sproduced by beexlParser#factor0.
     def exitFactor0(self, ctx:beexlParser.Factor0Context):
-        
-        t_id =  beexlSemantic.getVariableInfo(ctx.getText())
-        t_id = (t_id,'id') if t_id != None else None
-        t_number = (int(str(ctx.getToken(61,0))),'int') if ctx.getToken(61,0) else None
-        t_float = (float(str(ctx.getToken(62,0))),'f') if ctx.getToken(62,0) else None
-        t_vector = (str(ctx.getToken(28,0)),'v') if ctx.getToken(28,0) else None
-        t_rgba = (str(ctx.getToken(27,0)),'r') if ctx.getToken(27,0) else None
+        token = ctx.getText()
+        t_value = None
+        t_type = None
+        index = -1
 
-        if not (t_id or t_number or t_float or t_vector or t_rgba):
+        def FactorHelper(myToken):
+            t_value = beexlSemantic.getVariableInfo(myToken)
+            if t_value == None:
+                return None, None
+            t_value = t_value['memory']
+            t_type = t_value.split(":")[0].split('_')[1]
+            return t_value, t_type
+
+        while index < 4 and t_value == None and t_type == None:
+            index = index + 1
+            if index == 0:
+                t_value,t_type = FactorHelper(token)
+                if t_value == None:
+                    continue
+            if index == 1 and not '.' in token:
+                try:
+                    t_value,t_type = int(token),'int'
+                except:
+                    continue
+            if index == 2 and '.' in token:
+                try:
+                    t_value, t_type = float(token),'f'
+                except:
+                    continue
+
+            if index == 3 and '.' in token:
+                info = token.split('.')
+                
+                if len(info[1]) > 1 or info[1] not in ['r','g','b','a','x','y']:
+                    continue
+
+                t_value,t_type = FactorHelper(info[0])
+                if t_type:
+                    t_type += '.' + info[1]
+
+        if t_value == None and t_type == None:
             return
 
-        t_value, t_type = t_id or t_number or t_float or t_vector or t_rgba
         if t_value and not t_type:
-            beexlSemantic.stopExecution("Variable not declared")
-
-        if ( not (t_value or not t_id) ) and (t_id and not 'memory' in t_id):
-            return
+            beexlSemantic.stopExecution("Variable has no value assigned")
         
-        if t_id:
-            id_info = t_id[0]
-            if not 'memory' in id_info:
-                beexlSemantic.stopExecution("Variable not declared")
-
-            t_value = id_info['memory']
-            t_type = t_value.split(':')[0].split("_")[1]
-
         beexlSemantic.operandStack[beexlSemantic.operandDepth] += [t_value]
         beexlSemantic.typeStack.append(t_type)
         
