@@ -26,7 +26,8 @@ class VirtualMachine:
             'fill': lambda info: self.Fill(info[1],info[2]),
             'create':lambda info: self.CreateHelper(info[1]),
             'read': lambda info: beexlHelper.readImage(info[1]),
-            'print':lambda info:beexlHelper.printImage(),
+            'SHOW_CANVAS':lambda info:beexlHelper.printImage(),
+            'print':lambda info:self.PrintHelper(info[1]),
             'GOTO':lambda info:self.GOTO(info[1]),
             'GOTO F': lambda info: self.GOTO_F(info),
             'GOSUB':lambda info: self.GOSUB(info),
@@ -212,10 +213,25 @@ class VirtualMachine:
             data_type = value.split(':')[0]
             memory_direction = int(value.split(':')[1])
             value = self.stack[-1][1].GetMemoryValue(memory_direction,data_type)
+        
         memory_to_kill = self.stack.pop(-1)
         del memory_to_kill
-        self.stack[-1][0] += 2
+        self.stack[-1][0] += 1
         assign_info = self.quadruples[self.stack[-1][0]]
-        self.Operation(value,assign_info[2],None,'=')
+        #debo de arreglar esto porque el return no siempre sera para una operacion
+        #lo que debo de hacer es que dependiendo del cuadruplo haga la accion correcta
+        #no asumir que siempre sera una operacion o que se igualará a algo
+        #aunque por ahora funciona y jala para todas las pruebas
+        self.Operation(value,assign_info[-1],None,'=')
+
+    def PrintHelper(self,value):
+        if type(value) != str:
+            print(value)
+            return
+        info = value.split(':')
+        data_type = info[0]
+        memory_location = int(info[1])
+        value = self.stack[-1][1].GetMemoryValue(memory_location,data_type)
+        print(value)
 
 virtualMachine = VirtualMachine()         

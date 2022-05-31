@@ -210,8 +210,23 @@ class beexlListener(ParseTreeListener):
         beexlSemantic.addQuadruple([attribute,assignment,variable_info['memory']])
 
     # Enter a parse tree produced by beexlParser#print0.
-    def enterPrint0(self, ctx:beexlParser.Print0Context):
-        beexlSemantic.addQuadruple([ctx.getText().split(';')[0]])
+    def enterShowCanvas0(self, ctx:beexlParser.ShowCanvas0Context):
+        beexlSemantic.addQuadruple(['SHOW_CANVAS'])
+
+    def enterPrint0(self,ctx:beexlParser.Print0Context):
+        beexlSemantic.correct_print = False
+    
+    def exitPrint0(self,ctx:beexlParser.Print0Context):
+        if beexlSemantic.correct_print == False:
+            beexlSemantic.stopExecution("print expects at least one argument")
+
+    def enterPrint2(self,ctx:beexlParser.Print2Context):
+        beexlSemantic.correct_print = True
+        beexlSemantic.restartStacks()
+
+    # Enter a parse tree produced by beexlParser#vector1.
+    def exitPrint2(self,ctx:beexlParser.Vector1Context):
+        beexlSemantic.addQuadruple(['print',beexlSemantic.operandStack[beexlSemantic.operandDepth].pop()])
 
     # Enter a parse tree produced by beexlParser#conditional0.
     def enterConditional1(self, ctx:beexlParser.Conditional1Context):
@@ -438,7 +453,7 @@ class beexlListener(ParseTreeListener):
     # Exit a parse tree produced by beexlParser#functionCall0.
     def enterFunctionCall0(self, ctx:beexlParser.FunctionCall0Context):
         beexlSemantic.restartStacks()
-        beexlSemantic.operandDepth = 0
+        beexl.operandDepth = 0
         call_info = ctx.getText().split('(')
         function_name = call_info[0]
         if beexlSemantic.function_table[function_name]['return_type'] != 'void':

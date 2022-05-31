@@ -27,6 +27,7 @@ class BeexlSemantic():
         self.current_function = ""
         self.param_index = -1
         self.current_parameters = {}
+        self.correct_print = True
 
     def getVariableInfo(self,name):
         if self.current_scope != "global":

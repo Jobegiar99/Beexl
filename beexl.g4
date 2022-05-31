@@ -28,6 +28,7 @@ while1:'{'extras0+'}';
 extras0:pixelFill0
         |assignment0
         |print0
+        |showCanvas0
         |functionCall0';'
         |specialAssignment0
         |await0;
@@ -40,7 +41,11 @@ assignment0:ID'='(hyperExp0| vector0 | rgba0)';';
 
 specialAssignment0: (rgbaAttribute0|vectorAttribute0)'='(exp0)';';
 
-print0: PRINT';';
+print0:PRINT'('print1+')'';';
+print1:print2(','print2)*;
+print2:exp0;
+
+showCanvas0:SHOW_CANVAS';';
 
 
 conditional0: IF'('hyperExp0')'conditional1;
@@ -115,7 +120,8 @@ FUNCTION:'fun';
 VOID:'void';
 MAIN:'main';
 RETURN: 'return';
-PRINT: 'print';
+PRINT:'print';
+SHOW_CANVAS:'show_canvas';
 MAX_RED:'MAX_RED';
 MAX_BLUE:'MAX_BLUE';
 MAX_GREEN:'MAX_GREEN';

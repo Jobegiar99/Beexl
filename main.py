@@ -210,7 +210,23 @@ fun void main () {
 }
 
 """
-tests = [test_valid_5]
+
+test_print = """
+
+filename read "beexl.png"
+
+fun int test ( value:int ){
+    return  value * value ;
+}
+
+fun void main () {
+    print ( 4 * 2 - 2 , test ( test ( 2 * test ( 2 * test ( 2 ) ) * test ( 2 ) ) ) * test ( 2 ) );
+    print ( 3 );
+    await 1000;
+    show_canvas;
+}
+"""
+tests = [test_print]
 
 for test in tests:
     print("--------------")
