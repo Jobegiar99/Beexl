@@ -137,7 +137,7 @@ var current: vector;
 var increment: int;
 var row: int;
 
-fun void ameno (  ) {
+fun int ameno ( olo:int ) {
     fill previous , color;
     fill current , dot;
     previous = vector ( row  , 20 );
@@ -145,19 +145,25 @@ fun void ameno (  ) {
     current = vector ( row , 20 );
     print ;
     if ( ( increment == 1 && row < 100 ) || ( increment == -1 && row > 0 )  ){
-        ameno ( ) ;
+        row = ameno ( 3 + 12 * ( 12 - 34 ) );
     }
+    return olo * 2;
 }
 
+fun int test ( ol: int ) {
+    return ( ol * ol ) ;
+}
 
 fun void main (){
     var iterations : int;
     iterations = 0 ;
     row = 4;
+    increment = 1;
     color = rgba ( MAX_RED , 225 , 120, 255 ) ;
     dot = rgba ( MAX_RED , 0 , 0 , MAX_ALPHA );
     previous = vector ( 0 , 2 );
     current = vector ( 0 , 2 );
+    row = test ( 123 )  ;
     while ( iterations < 100  ){
         increment = 1;
         increment = -1;

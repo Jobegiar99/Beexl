@@ -1,3 +1,4 @@
+from cv2 import add
 from memoryManager import MemoryManager, memory
 from beexlHelper import BeexlHelper, beexlHelper
 from mySemantic import beexlSemantic
@@ -40,7 +41,8 @@ class VirtualMachine:
             'a': lambda info: self.GraphicMapHelper('a',info[1],info[2]),
             'v=': lambda info: self.GraphicAssign('v',info[-1]),
             'c=': lambda info: self.GraphicAssign('c',info[-1]),
-            'await':lambda info: time.sleep(info[1]/ 1000)
+            'await':lambda info: time.sleep(info[1]/ 1000),
+            'RETURN':lambda info: self.ReturnHelper(info[1])
         }
 
         self.operationMap = {
@@ -81,7 +83,6 @@ class VirtualMachine:
 
             #debo quitar esto
             #max_iterations += 1
-        print(self.graphicMap)
 
     def Operation(self,left,right,target,operator):  
         current_memory = self.stack[-1][1]
@@ -185,23 +186,36 @@ class VirtualMachine:
                 beexlSemantic.stopExecution( \
                     "Trying to assign " + str(place) + " attribute with a variable " + \
                     "that has not been assigned a value")
-            if address:
+            if address != None:
                 data_type_adr = address.split(':')[0]
                 memory_place_adr = int(address.split(':')[1])
                 self.stack[-1][1].AssignMemoryValue(data_type_adr,memory_place_adr,value)
+                self.graphicMap[place] = int(value)
             else:
                 self.graphicMap[place] = int(value)
-        elif address:
+        elif address != None:
             data_type = address.split(':')[0]
             memory_place = int(address.split(':')[1])
             self.stack[-1][1].AssignMemoryValue(data_type,memory_place,value)
+        else:
+            self.graphicMap[place] = int(value)
         
-
     def GraphicAssign(self,graphic_type,place):
         info = place.split(':')
         data_type, memory_place = info[0], int(info[1]) 
         attributes = ['r','g','b','a'] if graphic_type == 'c'else ['x','y']
         for i in range(len(attributes)):
             self.stack[-1][1].AssignMemoryValue(data_type,memory_place + i,self.graphicMap[attributes[i]])
+        
+    def ReturnHelper(self,value):
+        if ':' in str(value):
+            data_type = value.split(':')[0]
+            memory_direction = int(value.split(':')[1])
+            value = self.stack[-1][1].GetMemoryValue(memory_direction,data_type)
+        memory_to_kill = self.stack.pop(-1)
+        del memory_to_kill
+        self.stack[-1][0] += 2
+        assign_info = self.quadruples[self.stack[-1][0]]
+        self.Operation(value,assign_info[2],None,'=')
 
 virtualMachine = VirtualMachine()         

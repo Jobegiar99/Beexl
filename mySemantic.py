@@ -93,6 +93,7 @@ class BeexlSemantic():
     def addQuadruple(self,quadruple):
         self.quadruples.append(quadruple)
 
+
     def restartStacks(self):
         self.operatorStack.clear()
         self.operandStack.clear()
@@ -106,5 +107,31 @@ class BeexlSemantic():
         for elem in info:
             if elem in ['(',')']:
                 self.stopExecution(error_message)     
+
+    def functionCallEnterHelper(self,ctx):
+        self.param_index = -1
+        call_info = ctx.getText().split('(')
+        function_name = call_info[0]
+        if function_name not in self.function_table:
+            self.stopExecution("Function not declared")
+
+        self.current_function = function_name
+        self.current_parameters = list(self.function_table[function_name]['parameters'].values())
+        self.addQuadruple(["ERA", function_name])
+
+    def functionCallExitHelper(self):
+        self.addQuadruple(["GOSUB", beexlSemantic.function_table[self.current_function]['line']])
+        if len(self.current_parameters) - 1 > self.param_index:
+            self.stopExecution("Wrong number of parameters for function " + self.current_function)
+
+        data_type = self.function_table[self.current_function]['return_type']
+        if data_type == 'void':
+            return
+
+        data_type = "local_" + data_type
+        data_memory = memory.GetNewMemory(data_type)
+        self.addQuadruple(['=',self.current_scope,data_type + ":" + str(data_memory)])
+        self.operandStack[self.operandDepth].append(data_type + ":" + str(data_memory))
+        self.typeStack.append(data_type.split('_')[1])
 
 beexlSemantic = BeexlSemantic()

@@ -5,6 +5,7 @@
 from ast import arg
 from unicodedata import name
 from antlr4 import *
+from sqlalchemy import func
 if __name__ is not None and "." in __name__:
     from .beexlParser import beexlParser
 else:
@@ -368,13 +369,14 @@ class beexlListener(ParseTreeListener):
     # Exit a parse tree produced by beexlParser#functionDefinition0.
     def enterFunctionDefinition0(self, ctx:beexlParser.FunctionDefinition0Context):
         function_info = ctx.getText().split('{')[0].split('(')
+        
         function_info[0] = function_info[0].split('fun')[1]
         function_info[1] = function_info[1].split(')')[0]
         function_params = function_info[1].split(',')
         function_param_names = []
         function_param_types = []
         function_name = ""
-            
+        function_return_type = ""
         for fp in function_params:
             if len(fp) == 0:
                 continue
@@ -389,6 +391,7 @@ class beexlListener(ParseTreeListener):
         for types in ['vector','int','float','rgba','void']:
             if types in function_info[0]:
                 function_name = function_info[0].split(types)[1]
+                function_return_type = types if types == "void" else beexlSemantic.type_map[types]
                 break
         
         function_param_memory = []
@@ -406,9 +409,14 @@ class beexlListener(ParseTreeListener):
 
         beexlSemantic.function_table[function_name]['parameters'] = function_param_info
         beexlSemantic.function_table[function_name]['line'] = len(beexlSemantic.quadruples)
+        beexlSemantic.function_table[function_name]['return_type'] = function_return_type
+        beexlSemantic.function_table[function_name]['has_return'] = False
         beexlSemantic.current_scope = function_name
 
     def exitFunctionDefinition0(self,ctx:beexlParser.FunctionDefinition0Context):
+        if beexlSemantic.function_table[beexlSemantic.current_scope]['return_type'] != "void":
+            if not beexlSemantic.function_table[beexlSemantic.current_scope]['has_return']:
+                beexlSemantic.stopExecution("Expecting return in a non-void function")
         beexlSemantic.current_scope = 'global'
     
     # Exit a parse tree produced by beexlParser#functionDefinition2.
@@ -431,23 +439,22 @@ class beexlListener(ParseTreeListener):
     def enterFunctionCall0(self, ctx:beexlParser.FunctionCall0Context):
         beexlSemantic.restartStacks()
         beexlSemantic.operandDepth = 0
-        beexlSemantic.param_index = -1
         call_info = ctx.getText().split('(')
         function_name = call_info[0]
+        if beexlSemantic.function_table[function_name]['return_type'] != 'void':
+            beexlSemantic.stopExecution("A function with a return type that is not void must be used in an operation")
+        beexlSemantic.functionCallEnterHelper(ctx)
 
-        if function_name not in beexlSemantic.function_table:
-            beexlSemantic.stopExecution("Function not declared")
-
-        beexlSemantic.current_function = function_name
-        beexlSemantic.current_parameters = list(beexlSemantic.function_table[function_name]['parameters'].values())
-
-        beexlSemantic.addQuadruple(["ERA", function_name])
             
     def exitFunctionCall0(self,ctx:beexlParser.FunctionCall0Context):
-        beexlSemantic.addQuadruple(["GOSUB", beexlSemantic.function_table[beexlSemantic.current_function]['line']])
-        if len(beexlSemantic.current_parameters) - 1 > beexlSemantic.param_index:
-            beexlSemantic.stopExecution("Wrong number of parameters for function " + beexlSemantic.current_function)
-        
+        beexlSemantic.functionCallExitHelper()
+
+    def enterFunctionCallFactor0(self,ctx:beexlParser.FunctionCallFactor0Context):
+        beexlSemantic.functionCallEnterHelper(ctx)
+
+    def exitFunctionCallFactor0(self,ctx:beexlParser.FunctionCallFactor0Context):
+        beexlSemantic.functionCallExitHelper()
+
     # Enter a parse tree produced by beexlParser#vector1.
     def enterFunctionCall2(self,ctx:beexlParser.FunctionCall2Context):
         beexlSemantic.param_index += 1
@@ -471,5 +478,15 @@ class beexlListener(ParseTreeListener):
 
     def enterAwait0(self,ctx:beexlParser.Await0Context):
         beexlSemantic.addQuadruple(["await",int(ctx.getText().split('await')[1][:-1])])
+
+    def enterReturn0(self,ctx:beexlParser.Return0Context):
+        if beexlSemantic.function_table[beexlSemantic.current_scope]['return_type'] == 'void':
+            beexlSemantic.stopExecution("Return can't be used in a void function")
+        beexlSemantic.function_table[beexlSemantic.current_scope]['has_return'] = True
+        beexlSemantic.restartStacks()
+
+    def exitReturn0(self, ctx:beexlParser.Return0Context):
+        operand = beexlSemantic.operandStack[beexlSemantic.operandDepth][-1]
+        beexlSemantic.addQuadruple(['RETURN',operand])
 
 del beexlParser

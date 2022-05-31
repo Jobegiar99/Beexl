@@ -28,7 +28,7 @@ while1:'{'extras0+'}';
 extras0:pixelFill0
         |assignment0
         |print0
-        |functionCall0
+        |functionCall0';'
         |specialAssignment0
         |await0;
 
@@ -42,9 +42,6 @@ specialAssignment0: (rgbaAttribute0|vectorAttribute0)'='(exp0)';';
 
 print0: PRINT';';
 
-functionCall0:ID'('functionCall2*')'';';
-functionCall1:functionCall2(','functionCall2)*;
-functionCall2:exp0;
 
 conditional0: IF'('hyperExp0')'conditional1;
 conditional1:'{'extras0*'}'conditional2?;
@@ -62,14 +59,23 @@ exp1:('+'|'-')exp0;
 term0:factor0 term1?;
 term1: ('/'|'*')term0;
 
-factor0:ID
-        |NUMBER
+factor0:NUMBER
         |DECIMAL_NUMBER
+        |functionCallFactor0
+        |gama0
+        |expressionRestart0
         |vectorAttribute0
-        |rgbaAttribute0
-        |expressionRestart0;
+        |rgbaAttribute0;
+
+gama0:expressionRestart0|omicron0;
+omicron0:ID;
+
+functionCallFactor0:ID'('functionCall1*')';
        
-       
+functionCall0:ID'('functionCall1*')';
+functionCall1:functionCall2(','functionCall2)*;
+functionCall2:exp0;
+
 expressionRestart0:'('hyperExp0')';
 
 vectorAttribute0:ID'.'(X|Y);
@@ -88,7 +94,11 @@ functionDefinition0:FUNCTION functionDefinition1 ID'('functionDefinition2*')'fun
 functionDefinition1:type0|VOID;
 
 functionDefinition2:ID':'type0','|ID':'type0;
-functionDefinition3:block0;
+functionDefinition3:functionBlock0;
+
+functionBlock0:'{'(vars0|instruction0|return0)*'}';
+
+return0:RETURN exp0';';
 
 
 WS : [ \t\r\n]+ -> skip ;
