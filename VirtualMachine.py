@@ -4,6 +4,7 @@ from beexlHelper import BeexlHelper, beexlHelper
 from beexlSemantic import beexlSemantic
 from collections import defaultdict
 import time
+import copy
 
 class VirtualMachine:
     def __init__(self):
@@ -88,8 +89,8 @@ class VirtualMachine:
             var_info_target = target.split(':')
             data_type_target = var_info_target[0]
             memory_location_target = int(var_info_target[1])
-            left_value = self.OperationValueHelper(left) if type(left) == str else left
-            right_value = self.OperationValueHelper(right) if type(right) == str else right
+            left_value = self.OperationValueHelper(left,stackDepth) if type(left) == str else left
+            right_value = self.OperationValueHelper(right,stackDepth) if type(right) == str else right
             result = self.operationMap[operator](left_value,right_value)
 
             if 'int' in data_type_target and operator == '/':
@@ -103,9 +104,10 @@ class VirtualMachine:
             var_info_right = right.split(':')
             data_type_right = var_info_right[0]
             memory_location_right = int(var_info_right[1])
+
             #assign the value of another variable
             if type(left) == str:
-                left_value = self.OperationValueHelper(left)
+                left_value = self.OperationValueHelper(left,stackDepth)
                 current_memory.AssignMemoryValue(data_type_right,memory_location_right,left_value)
                 self.stack[stackDepth][0] += 1
                 return
@@ -115,18 +117,20 @@ class VirtualMachine:
                 current_memory.AssignMemoryValue(data_type_right,memory_location_right,left)
                 self.stack[stackDepth][0] += 1
                 return
+
             #assign rgba or vector
             for i in range(len(left)):
                 current_memory.AssignMemoryValue(data_type_right,memory_location_right + i, int(left[i]))
                 
             self.stack[stackDepth][0] += 1
 
-    def OperationValueHelper(self,place):
+    def OperationValueHelper(self,place,stackDepth):
         if type(place) == str:
             var_info = place.split(':')
             data_type = var_info[0]
             memory_direction = int(var_info[1])
-            value = memory.GetMemoryValue(memory_direction,data_type)
+
+            value = self.stack[stackDepth][1].GetMemoryValue(memory_direction,data_type)
             if value == None:
                 beexlSemantic.stopExecution("Value not assigned to variable: " + place)
             
@@ -158,7 +162,6 @@ class VirtualMachine:
         self.stack[self.stackDepth    ][0] = info[1]
         self.stack[self.stackDepth - 1][0] += 1
 
-
     def Fill(self,vector,rgba):
         vector_direction = int(vector.split(":")[1])
         rgba_direction = int(rgba.split(":")[1])
@@ -176,8 +179,10 @@ class VirtualMachine:
         beexlHelper.fill((vector_x,vector_y),(rgba_r,rgba_g,rgba_b,rgba_a))
         self.stack[self.stackDepth][0] += 1
 
-    def PARAM(self,info,stack):
-        self.Operation(info[1],info[2],None,'=',stack)
+    def PARAM(self,info,stackDepth):
+        value = self.OperationValueHelper(info[1],self.stackDepth - 1)
+        memory_info = info[-1].split(':')
+        self.stack[self.stackDepth][1].AssignMemoryValue(memory_info[0],int(memory_info[1]), value)
 
     def GraphicMapHelper(self, place, value, address):
         if value in ['MAX_RED','MAX_BLUE','MAX_GREEN','MAX_ALPHA']:
@@ -219,20 +224,18 @@ class VirtualMachine:
         self.stack[self.stackDepth][0] += 1
    
     def ReturnHelper(self,value,stack):
-        print("RETURN VALUE",value)
-
-        data_type = value.split(':')[0]
-        memory_direction = int(value.split(':')[1])
-        value = self.stack[self.stackDepth][1].GetMemoryValue(memory_direction,data_type)
-        self.stack[stack - 1][1].AssignMemoryValue(data_type,memory_direction,value)
+        if type(value) == str:
+            data_type = value.split(':')[0]
+            memory_direction = int(value.split(':')[1])
+            value = self.stack[self.stackDepth][1].GetMemoryValue(memory_direction,data_type)
+            self.stack[stack - 1][1].AssignMemoryValue(data_type,memory_direction,value)
+            
         memory_to_kill = self.stack.pop(self.stackDepth)
         self.stackDepth -= 1
         self.stack[self.stackDepth][0] += 1
         target = self.quadruples[self.stack[self.stackDepth ][0] -1][-1]
         target_type = target.split(':')[0]
         target_memory = int(target.split(':')[1])
-        print(memory_to_kill[1].memory_table['local_int'])
-        print(self.stack[self.stackDepth][1].memory_table['local_int'])
         self.stack[self.stackDepth][1].AssignMemoryValue(target_type,target_memory,value)
         del memory_to_kill
         
@@ -283,12 +286,18 @@ class VirtualMachine:
     def EraHelper(self):
         self.stackDepth += 1
         self.stack[self.stackDepth][0] = self.stack[self.stackDepth - 1][0]
-        self.stack[self.stackDepth][1].memory_table = self.stack[self.stackDepth - 1][1].memory_table
+        self.stack[self.stackDepth][1].memory_table = copy.deepcopy( self.stack[self.stackDepth - 1][1].memory_table )
         preStack = self.stack[self.stackDepth - 1]
+        preStack[0] += 1
         while preStack[0] < len(self.quadruples) and self.quadruples[preStack[0]] != "GOSUB":
-            preStack[0] += 1
+            
             operation = self.quadruples[preStack[0]][0]
-            self.functions[operation](self.quadruples[preStack[0]],self.stackDepth)
+            depth = self.stackDepth - 1 if operation != "PARAM" else self.stackDepth 
+
+            self.functions[operation](self.quadruples[preStack[0]], depth )
+            if operation in ['PARAM']:
+                preStack[0] += 1
+
             if operation == "GOSUB":
                 break
 

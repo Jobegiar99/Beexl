@@ -167,7 +167,65 @@ fun void main (){
 }
 """
 
-factorial_test = """\
+fibbo_fact_test = """\
+filename read "beexl.png";
+
+var i:int;
+var n: int;
+var fact:int;
+var fibbo1: int;
+var fibbo2: int;
+var fibbo3: int;
+
+fun int getFact ( n: int ) {
+    var p: int;
+    p = n;
+    if ( n == 1 ) {
+        return n  ;
+    }
+    return  p  * getFact ( n - 1 )  ;
+}
+
+fun int getFibbo ( i : int ){
+    if ( i == 0){
+        return 0;
+    }
+    if ( i == 1){
+        return 1;
+    }
+
+    return  getFibbo ( i - 1 ) + getFibbo ( i - 2 ) ;
+}
+
+fun void main (){
+    var i : int ;
+    var n : int;
+    n = 10;
+    fact = 1;
+    i = 1;
+    fibbo1 = 0;
+    fibbo2 = 1;
+    fibbo3 = 1;
+    while ( i < n ) {
+        fibbo3 = fibbo1 + fibbo2;
+        fibbo1 = fibbo2;
+        fibbo2 = fibbo3;
+        i = i + 1;
+    }
+    print ( fibbo2 );
+    print ( getFibbo ( n ) );
+    i = 1;
+    while ( i <= n ) {
+        fact = fact * i;
+        i = i + 1;
+    }
+    print ( fact );
+    fact = getFact ( n ) ;
+    print ( fact );
+}
+"""
+
+iterative_test = """\
 filename read "beexl.png";
 
 var i:int;
@@ -178,12 +236,12 @@ fun int getFact ( n: int ) {
         return n ;
     }
 
-    return n * getFact ( n - 1 ) ;
+    return getFact ( n - 1 ) * ;
 }
 
 fun void main (){
 
-    fact = getFact ( 5  );
+    fact = getFact ( 5 + 6 );
 
     print ( 0, fact , 0 );
 }
