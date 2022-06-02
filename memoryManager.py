@@ -37,6 +37,7 @@ class MemoryManager:
         self.AssignMemoryTableValuesHelper("temp_b", 12000, 12999)
         self.AssignMemoryTableValuesHelper("temp_v", 13000, 13999,2)
         self.AssignMemoryTableValuesHelper("temp_r", 14000, 14999,4)
+        self.AssignMemoryTableValuesHelper('pointer', 15000,15999,1)
 
     def AssignMemoryTableValuesHelper(self,data_type, LL, UL, counter_increment = 1):
         self.memory_table[data_type]['UL'] = UL
@@ -44,13 +45,25 @@ class MemoryManager:
         self.memory_table[data_type]['counter'] = 0
         self.memory_table[data_type]['counter_increment'] = counter_increment
 
-    def GetNewMemory(self,data_type):
+    def GetNewMemory(self,data_type,increment = 1):
         self.GetNewMemoryHelper(data_type)
+
         lower_limit = self.memory_table[data_type]['LL']
-        memory_location = self.memory_table[data_type]['counter'] + lower_limit
-        self.memory_table[data_type]['counter'] += self.memory_table[data_type]['counter_increment']
-        for iteration in range(self.memory_table[data_type]['counter_increment']):
+
+        memory_location = self.memory_table[data_type]['counter'] \
+                         + lower_limit
+
+        counter_increment = self.memory_table[data_type]['counter_increment']
+
+        increment = counter_increment if increment == 1 or counter_increment > 1 \
+                    else increment
+
+        self.memory_table[data_type]['counter'] += increment
+        self.GetNewMemoryHelper(data_type)
+
+        for _ in range(self.memory_table[data_type]['counter_increment']):
             self.memory_table[data_type]['memory'].append(None)  
+
         return memory_location 
 
     def GetNewMemoryHelper(self,data_type):
