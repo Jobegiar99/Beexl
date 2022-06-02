@@ -1,6 +1,6 @@
 grammar beexl;
 
-fileconfig0 :FILENAME fileconfig1 vars0* body0;
+fileconfig0 :FILENAME fileconfig1 (vars0|arrayInit0)* body0;
 fileconfig1:READ STRINGFILENAME';'
                         |CREATE STRINGFILENAME';'canvas0 background0;
 
@@ -28,9 +28,11 @@ while1:'{'extras0+'}';
 extras0:pixelFill0
         |assignment0
         |print0
+        |return0
         |showCanvas0
         |functionCall0';'
         |specialAssignment0
+        |arrayAssign0
         |await0;
 
 await0: AWAIT NUMBER';';
@@ -64,16 +66,33 @@ exp1:('+'|'-')exp0;
 term0:factor0 term1?;
 term1: ('/'|'*')term0;
 
-factor0:NUMBER
-        |DECIMAL_NUMBER
-        |functionCallFactor0
-        |gama0
-        |expressionRestart0
+factor0:alpha0
         |vectorAttribute0
         |rgbaAttribute0;
 
-gama0:expressionRestart0|omicron0;
-omicron0:ID;
+ alpha0:functionCallFactor0
+     |lambda0;
+
+lambda0:arrayExpCall0
+       |gama0;
+
+gama0:expressionRestart0
+     |omicron0;
+
+omicron0:ID
+        |NUMBER
+        |DECIMAL_NUMBER;
+        
+
+arrayInit0:VAR ID'['NUMBER']'':'type0';';
+
+arrayExpCall0: ID'['arrayExpCall1+']';
+arrayExpCall1: exp0;
+
+arrayAssign0: ID'['arrayAssign1']''='arrayAssign2';';
+arrayAssign1:exp0;
+arrayAssign2:exp0; //looks redundandt but each one has its own listener action
+
 
 functionCallFactor0:ID'('functionCall1*')';
        
@@ -101,7 +120,7 @@ functionDefinition1:type0|VOID;
 functionDefinition2:ID':'type0','|ID':'type0;
 functionDefinition3:functionBlock0;
 
-functionBlock0:'{'(vars0|instruction0|return0)*'}';
+functionBlock0:'{'(vars0|arrayInit0|instruction0)*'}';
 
 return0:RETURN exp0';';
 

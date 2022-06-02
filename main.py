@@ -4,93 +4,11 @@ from beexlLexer import beexlLexer
 from beexlListener import beexlListener
 from beexlParser import beexlParser
 from collections import defaultdict
-from mySemantic import *
-from VirtualMachine import virtualMachine
+from beexlSemantic import *
+from VirtualMachine import VirtualMachine, virtualMachine
+from memoryManager import MemoryManager
 """
 TO DO: add rules to handle special words with a parenthesis and no space
-"""
-test_valid_2 = """
-filename create "beexl.png";
-canvas 123, 123;
-background rgba (10,10,10,123 );
-var myVector: vector;
-
-fun void myXD ( ){
-    myVector = vector ( 12 , 12 );
-}
-
-fun void main () {
-    myVector = vector ( 10, 10);
-    var merg : rgba ;
-    var al : int ;
-    al =  B + ( A + ( B * ( A - fdh ) ) ) - B;
-    print;
-    merg = rgba ( 12 , 125 , 255 , 0 );
-    var xD: vector;
-    xD = vector (10,15) ;
-    if ( A < B && B < A ) {
-        print;
-    }
-    else {
-        xD = A * B < ( A + B ) * C ;
-    }
-    
-    while ( A == B || B < C ){
-        print;
-        fill myVector , merg;
-    }
-
-    if ( ( A * B < C * A ) && ( A - B >= C + A || A < B ) )  {
-        print;
-    }
-}
-"""
-
-test_valid_3 = """
-filename create  "beexl.png";
-canvas 100 , 100 ;
-background rgba ( 10 , 12 , 14,10 ) ;
-
-var al: vector;
-var ol: rgba;
-var olo: int;
-
-fun void ameno ( ert :vector , olo:int , eort : int , eorkgoekro : rgba ){
-    ameno (al , olo , olo , ol );
-}
-
-fun void main () {
-    al = vector ( 2 , 2 );
-    ol = rgba ( 10 , 1 , 12 , 255 );
-    olo = 5;
-    fill al,ol;
-
-    al = vector ( 1 , 2 );
-    ol = rgba ( 10 , 112 , 12 , 255);
-
-    fill al,ol;
-    var olo : int;
-    var A : int;
-    
-    olo =  olo * 4 + (  3 + 4  ) * 34 + 234;
-
-    fill al , ol;
-
-    ameno ( al, olo, olo, ol );
-
-    if ( 3 < 234 && 234 >= 123 )
-    {
-        olo = 2;
-    }
-    else
-    {
-        olo = 3;
-    }
-    while ( 3 < 2 && 234 >= 123 )
-    {
-        olo = 4;
-    }
-}
 """
 
 test_valid_4 = """
@@ -103,7 +21,7 @@ fun void ameno ( ol : int, ulu: int ){
     }
     else
     {
-        print;
+        print ( ol , ulu ) ;
     }
 }
 
@@ -117,7 +35,7 @@ fun void main (){
     ele = rgba ( 255 , 255 , 255  , 255 );
     ulu = vector ( 14 , 15 );
     if ( 13 * 23 < 14 + 12 ){
-        print;
+        print ( olo, elu );
     }
     fill ulu , ele ;
     ameno ( olo , olo );
@@ -143,7 +61,7 @@ fun int ameno ( olo:int ) {
     previous = vector ( row  , 20 );
     row = row + increment;
     current = vector ( row , 20 );
-    print ;
+    show_canvas ;
     if ( ( increment == 1 && row < 100 ) || ( increment == -1 && row > 0 )  ){
         row = ameno ( 3 + 12 * ( 12 - 34 ) );
     }
@@ -171,6 +89,7 @@ fun void main (){
         color.g = 2;
         color.b = 4;
         color.a = 123 + color.r - 123;
+        increment = ameno ( increment );
         iterations = iterations + 1;
     }
 }
@@ -193,26 +112,21 @@ fun void main (){
     ulu = vector ( olo , olo * 2 + 3 + 4 + 5 + 6 + 7 + 8 ) ;
     var first: int;
     var second:int;
-    print;
+    show_canvas;
     await 1000 ;
-    print;
+    show_canvas;
 }
-
 """
-
 
 test_valid_7 = """
 filename read "beexl.png"
 
 fun void main () {
-    var al: vector;
-    al: 
+    var al: vector; 
 }
-
 """
 
 test_print = """
-
 filename read "beexl.png"
 
 fun int test ( value:int ){
@@ -226,7 +140,56 @@ fun void main () {
     show_canvas;
 }
 """
-tests = [test_print]
+
+array_test = """
+filename read "beexl.png";
+var row:int;
+var arr1[ 4 ]:int;
+var arr2[ 5 ]:int;
+var col:int;
+
+fun void main (){
+    row = arr1 [ 10 * 23 * 2 + arr2 [ 12 * 123 ] ];
+    await 1;
+    arr1 [ arr1 [ 12 ] + 12  ] = arr1 [ 2 * 3 ] + 2;
+}
+"""
+
+array_test_2 = """
+filename read "beexl.png";
+var row:int;
+var ol[ 4 ]:int;
+var ul[ 5 ]: int;
+var col:int;
+
+fun void main (){
+    ol[0] = 2;
+}
+"""
+
+factorial_test = """\
+filename read "beexl.png";
+
+var i:int;
+var n: int;
+var fact:int;
+fun int getFact ( n: int ) {
+    if ( n  == 1 ) {
+        return n ;
+    }
+
+    return n * getFact ( n - 1 ) ;
+}
+
+fun void main (){
+
+    fact = getFact ( 5  );
+
+    print ( 0, fact , 0 );
+}
+"""
+
+tests = [factorial_test]
 
 for test in tests:
     print("--------------")
@@ -238,10 +201,26 @@ for test in tests:
     listener = beexlListener()
     ParseTreeWalker().walk(listener,tree)
 
-    counter = 0
-    for p in beexlSemantic.quadruples:
-        print(counter, p)
-        counter += 1
+    coun = 0
+    with open("file.bxl",mode='w') as file:
+        line = "|"
+        for quadruple in beexlSemantic.quadruples:
+            line+= "|"
+            for element in quadruple:
+                counter = 15
+                for char in str(element):
+                    counter -= 1
+                    line += str(char)
+                while counter > 1:
+                    counter -= 1
+                    line += " "
+                line += "|"
+            line += "\n"
+
+            coun += 1
+
+        file.write(line)
+
 
     virtualMachine.SetMachine(beexlSemantic.quadruples)
     virtualMachine.ReadQuadruples()

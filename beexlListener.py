@@ -1,7 +1,4 @@
 # Generated from beexl.g4 by ANTLR 4.9.3
-# TO DO:
-    #add type stack
-    #add special cases for vector and rgba
 from ast import arg
 from unicodedata import name
 from antlr4 import *
@@ -11,7 +8,7 @@ if __name__ is not None and "." in __name__:
 else:
     from beexlParser import beexlParser
 
-from mySemantic import BeexlSemantic, beexlSemantic
+from beexlSemantic import beexlSemantic
 from memoryManager import memory
 
 # This class defines a complete listener for a parse tree produced by beexlParser.
@@ -30,6 +27,91 @@ class beexlListener(ParseTreeListener):
     def enterVector1(self,ctx:beexlParser.Vector1Context):
         beexlSemantic.restartStacks()
         beexlSemantic.vector_index += 1
+
+    def enterArrayInit0(self,ctx:beexlParser.ArrayInit0Context):
+        info = ctx.getText().split(':')
+        data_type = ('global_' if beexlSemantic.current_scope == 'global' else 'local_') + beexlSemantic.type_map[info[1][:-1]]
+        num = info[0].split('[')[1][:-1]
+        arr_name = info[0].split('[')[0]
+        arr_name = arr_name.split('var')[1]
+        if '.' in num:
+            beexlSemantic.stopExecution("Expecting integer in array size declaration")
+        try:
+            num = int(num)
+        except:
+            beexlSemantic.stopExecution("Error in array size declaration.")
+
+        if num < 1:
+            beexlSemantic.stopExecution("Arrays must have a size greater or equal to one")
+
+        #crear arreglo en memoria
+        #crear arreglo en tabla de variables
+        memory_location = data_type + ':' + str(memory.GetNewMemory(data_type,increment=num))
+        beexlSemantic.function_table[beexlSemantic.current_scope]['variables'][arr_name] = \
+            {'size':num,'memory':memory_location,'array':True}
+
+    def enterArrayExpCall0(self,ctx:beexlParser.ArrayExpCall0Context):
+        var_id = ctx.getText().split('[')[0]
+        var_info = beexlSemantic.getVariableInfo(var_id)
+
+        if var_info == None:
+            beexlSemantic.stopExecution("Trying to use a non-existent array in operation")
+
+        #this is the eorkgoe
+        beexlSemantic.operandStack[\
+            beexlSemantic.operandDepth\
+        ].append(var_info)
+
+    def enterArrayExpCall1(self,ctx:beexlParser.ArrayExpCall1Context):
+        beexlSemantic.operandDepth += 1
+
+    def exitArrayExpCall1(self,ctx:beexlParser.ArrayExpCall1Context):
+        
+        result = beexlSemantic.operandStack[beexlSemantic.operandDepth].pop(-1)
+        beexlSemantic.operandDepth -= 1
+        target = beexlSemantic.operandStack[beexlSemantic.operandDepth].pop(-1)
+        if 'array' not in target:
+            beexlSemantic.stopExecution("Cannot use normal var as array")
+      
+        beexlSemantic.addQuadruple(['VERIF',result,0,target['size'] - 1])
+
+        index_offset = 'pointer:'+str(memory.GetNewMemory('pointer'))
+        target_index = 'pointer:' + str(memory.GetNewMemory('pointer'))
+
+        #actualizar esto a pointers
+        beexlSemantic.addQuadruple(['+',int(target['memory'].split(':')[1]),result,index_offset])
+        beexlSemantic.operandStack[beexlSemantic.operandDepth].append(index_offset)
+        
+    def enterArrayAssign0(self, ctx:beexlParser.arrayAssign0):
+        beexlSemantic.restartStacks()
+        arr_name = ctx.getText().split('[')[0]
+        var_info = beexlSemantic.getVariableInfo(arr_name)
+
+        if var_info == None:
+            beexlSemantic.stopExecution("Trying to assign a value to a non-existent array")
+        if 'array' not in var_info:
+            beexlSemantic.stopExecution("Trying to use normal variable as array")
+        beexlSemantic.operandStack[beexlSemantic.operandDepth].append(var_info)
+        
+        
+    def enterArrayAssign1(self, ctx:beexlParser.arrayAssign1):
+        beexlSemantic.operandDepth += 1
+    
+    def exitArrayAssign1(self, ctx:beexlParser.arrayAssign1):
+        result = beexlSemantic.operandStack[1].pop(-1)
+        var_info = beexlSemantic.operandStack[0].pop(-1)
+        beexlSemantic.addQuadruple(['VERIF',result,0,var_info['size']])
+        index_offset = 'pointer:'+str(memory.GetNewMemory('pointer'))
+        beexlSemantic.addQuadruple(['+',int(var_info['memory'].split(':')[1]),result,index_offset])
+        beexlSemantic.restartStacks()
+        beexlSemantic.operandStack[beexlSemantic.operandDepth].append(index_offset)
+        beexlSemantic.operandDepth += 1
+    
+    def exitArrayAssign2(self,ctx:beexlParser.arrayAssign1):
+        print(beexlSemantic.operandStack)
+        result = beexlSemantic.operandStack[1][0]
+        var_info = beexlSemantic.operandStack[0][0]
+        beexlSemantic.addQuadruple(['=',result,var_info])
 
     # Enter a parse tree produced by beexlParser#vector1.
     def exitVector1(self,ctx:beexlParser.Vector1Context):
@@ -223,6 +305,7 @@ class beexlListener(ParseTreeListener):
     def enterPrint2(self,ctx:beexlParser.Print2Context):
         beexlSemantic.correct_print = True
         beexlSemantic.restartStacks()
+        
 
     # Enter a parse tree produced by beexlParser#vector1.
     def exitPrint2(self,ctx:beexlParser.Vector1Context):
@@ -369,7 +452,7 @@ class beexlListener(ParseTreeListener):
                beexlSemantic.operandStack[beexlSemantic.operandDepth + 1].pop(0)\
         )
         beexlSemantic.operandStack.pop(beexlSemantic.operandDepth + 1)
-
+        
     # Enter a parse tree produced by beexlParser#main0.
     def enterMain0(self, ctx:beexlParser.Main0Context):
         beexlSemantic.current_scope = "main"
@@ -453,13 +536,13 @@ class beexlListener(ParseTreeListener):
     # Exit a parse tree produced by beexlParser#functionCall0.
     def enterFunctionCall0(self, ctx:beexlParser.FunctionCall0Context):
         beexlSemantic.restartStacks()
-        beexl.operandDepth = 0
+        beexlSemantic.operandDepth = 0
         call_info = ctx.getText().split('(')
         function_name = call_info[0]
         if beexlSemantic.function_table[function_name]['return_type'] != 'void':
             beexlSemantic.stopExecution("A function with a return type that is not void must be used in an operation")
         beexlSemantic.functionCallEnterHelper(ctx)
-
+        
             
     def exitFunctionCall0(self,ctx:beexlParser.FunctionCall0Context):
         beexlSemantic.functionCallExitHelper()
@@ -503,5 +586,6 @@ class beexlListener(ParseTreeListener):
     def exitReturn0(self, ctx:beexlParser.Return0Context):
         operand = beexlSemantic.operandStack[beexlSemantic.operandDepth][-1]
         beexlSemantic.addQuadruple(['RETURN',operand])
+
 
 del beexlParser

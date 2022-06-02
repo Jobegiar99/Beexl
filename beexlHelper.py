@@ -1,5 +1,5 @@
 from PIL import Image,ImageShow
-from mySemantic import beexlSemantic
+from beexlSemantic import beexlSemantic
 import psutil
 class BeexlHelper():
 

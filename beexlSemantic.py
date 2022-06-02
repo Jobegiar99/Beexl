@@ -94,7 +94,6 @@ class BeexlSemantic():
     def addQuadruple(self,quadruple):
         self.quadruples.append(quadruple)
 
-
     def restartStacks(self):
         self.operatorStack.clear()
         self.operandStack.clear()
@@ -110,6 +109,7 @@ class BeexlSemantic():
                 self.stopExecution(error_message)     
 
     def functionCallEnterHelper(self,ctx):
+        self.operandDepth += 1
         self.param_index = -1
         call_info = ctx.getText().split('(')
         function_name = call_info[0]
@@ -121,6 +121,7 @@ class BeexlSemantic():
         self.addQuadruple(["ERA", function_name])
 
     def functionCallExitHelper(self):
+        self.operandDepth -= 1
         self.addQuadruple(["GOSUB", beexlSemantic.function_table[self.current_function]['line']])
         if len(self.current_parameters) - 1 > self.param_index:
             self.stopExecution("Wrong number of parameters for function " + self.current_function)
@@ -134,5 +135,6 @@ class BeexlSemantic():
         self.addQuadruple(['=',self.current_scope,data_type + ":" + str(data_memory)])
         self.operandStack[self.operandDepth].append(data_type + ":" + str(data_memory))
         self.typeStack.append(data_type.split('_')[1])
+
 
 beexlSemantic = BeexlSemantic()
