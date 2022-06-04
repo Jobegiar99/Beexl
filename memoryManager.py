@@ -60,8 +60,8 @@ class MemoryManager:
 
         self.memory_table[data_type]['counter'] += increment
         self.GetNewMemoryHelper(data_type)
-
-        for _ in range(self.memory_table[data_type]['counter_increment']):
+ 
+        for i in range(increment):
             self.memory_table[data_type]['memory'].append(None)  
 
         return memory_location 

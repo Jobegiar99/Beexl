@@ -63,9 +63,9 @@ fun int ameno ( olo:int ) {
     current = vector ( row , 20 );
     show_canvas ;
     if ( ( increment == 1 && row < 100 ) || ( increment == -1 && row > 0 )  ){
-        row = ameno ( 3 + 12 * ( 12 - 34 ) );
+        row = ameno ( 2 );
     }
-    return olo * 2;
+    return olo ;
 }
 
 fun int test ( ol: int ) {
@@ -89,7 +89,7 @@ fun void main (){
         color.g = 2;
         color.b = 4;
         color.a = 123 + color.r - 123;
-        increment = ameno ( increment );
+        increment = ameno ( 2 );
         iterations = iterations + 1;
     }
 }
@@ -148,22 +148,40 @@ var arr1[ 4 ]:int;
 var arr2[ 5 ]:int;
 var col:int;
 
-fun void main (){
-    row = arr1 [ 10 * 23 * 2 + arr2 [ 12 * 123 ] ];
-    await 1;
-    arr1 [ arr1 [ 12 ] + 12  ] = arr1 [ 2 * 3 ] + 2;
+
+fun void sortArray ( ) {
+    var i: int;
+    var j: int;
+    var smallest: int;
+    var arr2Copy[ 5 ]: int;
+    i = 0;
+    
+    while ( i < 5 ) {
+        j = 0;
+        while ( j < 1 ) {
+            j = j + 1;
+            print ( 69  );
+        }
+        i = i + 1;
+    }
 }
-"""
 
-array_test_2 = """
-filename read "beexl.png";
-var row:int;
-var ol[ 4 ]:int;
-var ul[ 5 ]: int;
-var col:int;
-
-fun void main (){
-    ol[0] = 2;
+fun void main () {
+    var i: int;
+    i = 0;
+    while ( i < 4 ){
+        arr1 [ i ] = i * 2 ;
+        print ( arr1 [ i ] );
+        i = i + 1;
+    }
+    print ( ( arr1[ arr1[1] ] + arr1[3] ) * ( arr1[3] + arr1[3] ) );
+    i = 0;
+    while ( i < 5 ){
+        arr2[i] = 5 - i;
+        print ( arr2[i] );
+        i = i + 1;
+    }
+    sortArray ();
 }
 """
 
@@ -200,7 +218,7 @@ fun int getFibbo ( i : int ){
 fun void main (){
     var i : int ;
     var n : int;
-    n = 10;
+    n = 15;
     fact = 1;
     i = 1;
     fibbo1 = 0;
@@ -212,46 +230,19 @@ fun void main (){
         fibbo2 = fibbo3;
         i = i + 1;
     }
-    print ( fibbo2 );
-    print ( getFibbo ( n ) );
+    print ( fibbo2 , getFibbo ( n ) );
     i = 1;
     while ( i <= n ) {
         fact = fact * i;
         i = i + 1;
     }
-    print ( fact );
-    fact = getFact ( n ) ;
-    print ( fact );
+    print ( fact , getFact ( n ) ) ;
 }
 """
 
-iterative_test = """\
-filename read "beexl.png";
-
-var i:int;
-var n: int;
-var fact:int;
-fun int getFact ( n: int ) {
-    if ( n  == 1 ) {
-        return n ;
-    }
-
-    return getFact ( n - 1 ) * ;
-}
-
-fun void main (){
-
-    fact = getFact ( 5 + 6 );
-
-    print ( 0, fact , 0 );
-}
-"""
-
-tests = [factorial_test]
+tests = [array_test]
 
 for test in tests:
-    print("--------------")
-    print("Test: ", tests.index(test) + 1)
     lexer = beexlLexer(InputStream(test))
     stream = CommonTokenStream(lexer)
     parser = beexlParser(stream)
@@ -261,9 +252,9 @@ for test in tests:
 
     coun = 0
     with open("file.bxl",mode='w') as file:
-        line = "|"
+        line = ""
         for quadruple in beexlSemantic.quadruples:
-            line+= "|"
+            line+= " "
             for element in quadruple:
                 counter = 15
                 for char in str(element):
@@ -272,16 +263,15 @@ for test in tests:
                 while counter > 1:
                     counter -= 1
                     line += " "
-                line += "|"
+                line += " "
             line += "\n"
 
             coun += 1
 
         file.write(line)
 
-
     virtualMachine.SetMachine(beexlSemantic.quadruples)
     virtualMachine.ReadQuadruples()
     
-    #for key in memory.memory_table:
+    # for key in memory.memory_table:
     #    print(key,memory.memory_table[key])

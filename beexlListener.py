@@ -72,14 +72,14 @@ class beexlListener(ParseTreeListener):
         target = beexlSemantic.operandStack[beexlSemantic.operandDepth].pop(-1)
         if 'array' not in target:
             beexlSemantic.stopExecution("Cannot use normal var as array")
-      
-        beexlSemantic.addQuadruple(['VERIF',result,0,target['size'] - 1])
+
+        beexlSemantic.addQuadruple(['VERIF',result,0, target['size'] - 1 ])
 
         index_offset = 'pointer:'+str(memory.GetNewMemory('pointer'))
         target_index = 'pointer:' + str(memory.GetNewMemory('pointer'))
 
         #actualizar esto a pointers
-        beexlSemantic.addQuadruple(['+',int(target['memory'].split(':')[1]),result,index_offset])
+        beexlSemantic.addQuadruple(['+p',target['memory'],result,index_offset])
         beexlSemantic.operandStack[beexlSemantic.operandDepth].append(index_offset)
         
     def enterArrayAssign0(self, ctx:beexlParser.arrayAssign0):
@@ -92,26 +92,24 @@ class beexlListener(ParseTreeListener):
         if 'array' not in var_info:
             beexlSemantic.stopExecution("Trying to use normal variable as array")
         beexlSemantic.operandStack[beexlSemantic.operandDepth].append(var_info)
-        
-        
+             
     def enterArrayAssign1(self, ctx:beexlParser.arrayAssign1):
         beexlSemantic.operandDepth += 1
     
     def exitArrayAssign1(self, ctx:beexlParser.arrayAssign1):
         result = beexlSemantic.operandStack[1].pop(-1)
         var_info = beexlSemantic.operandStack[0].pop(-1)
-        beexlSemantic.addQuadruple(['VERIF',result,0,var_info['size']])
+        beexlSemantic.addQuadruple(['VERIF',result,0,var_info['size'] - 1])
         index_offset = 'pointer:'+str(memory.GetNewMemory('pointer'))
-        beexlSemantic.addQuadruple(['+',int(var_info['memory'].split(':')[1]),result,index_offset])
+        beexlSemantic.addQuadruple(['+p',var_info['memory'],result,index_offset])
         beexlSemantic.restartStacks()
         beexlSemantic.operandStack[beexlSemantic.operandDepth].append(index_offset)
         beexlSemantic.operandDepth += 1
     
     def exitArrayAssign2(self,ctx:beexlParser.arrayAssign1):
-        print(beexlSemantic.operandStack)
         result = beexlSemantic.operandStack[1][0]
         var_info = beexlSemantic.operandStack[0][0]
-        beexlSemantic.addQuadruple(['=',result,var_info])
+        beexlSemantic.addQuadruple(['=p',result,var_info])
 
     # Enter a parse tree produced by beexlParser#vector1.
     def exitVector1(self,ctx:beexlParser.Vector1Context):
@@ -250,7 +248,7 @@ class beexlListener(ParseTreeListener):
         if not var_info:
             beexlSemantic.stopExecution("Error: Assignment of non-existent variable: " + variable_name)
 
-        if var_info['type'] != assign_type:
+        if 'type' in var_info and var_info['type'] != assign_type:
             beexlSemantic.stopExecution("Type mismatch in assignment of variable")
                 
         if assign_type == "v":

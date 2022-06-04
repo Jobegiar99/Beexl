@@ -25,8 +25,7 @@ class BeexlHelper():
         self.canvas.putpixel(position,color)
 
     def printImage(self):
-        copy = self.canvas.resize((self.canvas.width * 5, self.canvas.height * 5))
-        copy.show(title="PRINT")
+        self.canvas.show(title = self.filename)
 
     def saveImage(self):
         self.canvas.save(self.filename)

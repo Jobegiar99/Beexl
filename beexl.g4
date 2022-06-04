@@ -33,11 +33,13 @@ extras0:pixelFill0
         |functionCall0';'
         |specialAssignment0
         |arrayAssign0
-        |await0;
+        |await0
+        |while0
+        |conditional0;
 
 await0: AWAIT NUMBER';';
 
-pixelFill0:FILL(ID|vector0)','(ID|rgba0)';'; //change to vector assignment and rgba assignment
+pixelFill0:FILL(ID|vector0)','(ID|rgba0)';'; 
 
 assignment0:ID'='(hyperExp0| vector0 | rgba0)';'; 
 
@@ -86,7 +88,7 @@ omicron0:ID
 
 arrayInit0:VAR ID'['NUMBER']'':'type0';';
 
-arrayExpCall0: ID'['arrayExpCall1+']';
+arrayExpCall0: ID'['arrayExpCall1']';
 arrayExpCall1: exp0;
 
 arrayAssign0: ID'['arrayAssign1']''='arrayAssign2';';
@@ -132,7 +134,6 @@ CREATE: 'create';
 CANVAS: 'canvas';
 RGBA:'rgba';
 VECTOR:'vector';
-FORMAT: 'format';
 BACKGROUND:'background';
 VAR:'var';
 FUNCTION:'fun';

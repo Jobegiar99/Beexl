@@ -48,7 +48,9 @@ class VirtualMachine:
             'c=': lambda info,stack: self.GraphicAssign('c',info[-1]),
             'await':lambda info,stack: self.AwaitHelper(info[1]),
             'RETURN':lambda info,stack: self.ReturnHelper(info[1],stack),
-            'VERIF':lambda info,stack: self.VerifHelper(info)
+            'VERIF':lambda info,stack: self.VerifHelper(info),
+            '+p':lambda info,stack: self.PlusPointerHelper(info),
+            '=p':lambda info, stack: self.EqualPointerHelper(info)
         }
 
         self.operationMap = {
@@ -133,6 +135,9 @@ class VirtualMachine:
             value = self.stack[stackDepth][1].GetMemoryValue(memory_direction,data_type)
             if value == None:
                 beexlSemantic.stopExecution("Value not assigned to variable: " + place)
+            
+            if type(value) == str:
+                return self.OperationValueHelper(value,stackDepth)
             
             return int(value) if 'int' in data_type else value
         return place
@@ -248,6 +253,9 @@ class VirtualMachine:
         data_type = info[0]
         memory_location = int(info[1])
         value = self.stack[self.stackDepth][1].GetMemoryValue(memory_location,data_type)
+        if type(value) == str:
+            self.PrintHelper(value)
+            return
         #this print is part of the function
         print(value)
         self.stack[self.stackDepth][0] += 1
@@ -267,8 +275,10 @@ class VirtualMachine:
         if value == None:
             beexlSemantic.stopExecution("Trying to use a variable that has no value in an array")
 
+
         if type(value) == int:
             self.VerifHelper([None,value,0,info[3]])
+            return
         
         elif type(value) != str:
             beexlSemantic.stopExecution("array expects an int")
@@ -290,7 +300,7 @@ class VirtualMachine:
         preStack = self.stack[self.stackDepth - 1]
         preStack[0] += 1
         while preStack[0] < len(self.quadruples) and self.quadruples[preStack[0]] != "GOSUB":
-            
+
             operation = self.quadruples[preStack[0]][0]
             depth = self.stackDepth - 1 if operation != "PARAM" else self.stackDepth 
 
@@ -312,6 +322,30 @@ class VirtualMachine:
 
     def AwaitHelper(self,milliseconds):
         time.sleep(milliseconds/ 1000)
+        self.stack[self.stackDepth][0] += 1
+
+    def PlusPointerHelper(self,info):
+        array_start_memory = info[1].split(':')
+        value = self.OperationValueHelper(info[2],self.stackDepth)
+        target_pointer = info[3].split(':')
+
+        pointer_data_type = target_pointer[0]
+        pointer_memory_address = int(target_pointer[1])
+        
+        array_data_type = array_start_memory[0]
+        array_memory_location = int(array_start_memory[1]) + value
+        pointer_value = array_data_type + ":" + str(array_memory_location)
+
+        self.stack[self.stackDepth][1].AssignMemoryValue(pointer_data_type,pointer_memory_address,pointer_value)
+        self.stack[self.stackDepth][0] += 1
+
+    def EqualPointerHelper(self,info):
+        pointer = info[-1].split(":")
+        value = self.OperationValueHelper(info[1],self.stackDepth)
+        pointer_data_type = pointer[0]
+        pointer_memory_address = int(pointer[1])
+        variable_info = self.stack[self.stackDepth][1].GetMemoryValue(pointer_memory_address,pointer_data_type).split(':')
+        self.stack[self.stackDepth][1].AssignMemoryValue(variable_info[0],int(variable_info[1]),value)
         self.stack[self.stackDepth][0] += 1
 
 virtualMachine = VirtualMachine()         
