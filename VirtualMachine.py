@@ -7,6 +7,7 @@ import time
 import copy
 
 class VirtualMachine:
+
     def __init__(self):
         self.stack = defaultdict(lambda:[0,MemoryManager()])
         self.stackDepth = 0
@@ -50,7 +51,8 @@ class VirtualMachine:
             'RETURN':lambda info,stack: self.ReturnHelper(info[1],stack),
             'VERIF':lambda info,stack: self.VerifHelper(info),
             '+p':lambda info,stack: self.PlusPointerHelper(info),
-            '=p':lambda info, stack: self.EqualPointerHelper(info)
+            '=p':lambda info, stack: self.EqualPointerHelper(info),
+            'ANIMATE':lambda info,stack:self.AnimateHelper()
         }
 
         self.operationMap = {
@@ -82,8 +84,12 @@ class VirtualMachine:
         self.stack[0][1] = memory
     
     def ReadQuadruples(self):
-        while self.stack[self.stackDepth][0] < (len(self.quadruples) - 1):
+        while self.stack[self.stackDepth][0] < (len(self.quadruples) ):
             self.functions[self.quadruples[self.stack[self.stackDepth][0]][0]](self.quadruples[self.stack[self.stackDepth][0]],self.stackDepth)
+    
+    def AnimateHelper(self):
+        beexlHelper.AnimateCanvas()
+        self.stack[self.stackDepth][0] += 1
 
     def Operation(self,left,right,target,operator,stackDepth): 
         current_memory = self.stack[stackDepth][1]
@@ -146,9 +152,9 @@ class VirtualMachine:
         self.stack[self.stackDepth][0] += 1
         size = self.quadruples[self.stack[self.stackDepth][0]][1]
         self.stack[self.stackDepth][0] += 1
-        color = self.quadruples[self.stack[self.stackDepth]][1]
+        color = self.quadruples[self.stack[self.stackDepth][0]][1]
         beexlHelper.createImage(size,color,filename)
-        self.stack[self.stackDepth][0] += 1
+        self.stack[self.stackDepth][0] += 5
 
     def GOTO(self, value):
         self.stack[self.stackDepth][0] = value 
@@ -190,6 +196,7 @@ class VirtualMachine:
         self.stack[self.stackDepth][1].AssignMemoryValue(memory_info[0],int(memory_info[1]), value)
 
     def GraphicMapHelper(self, place, value, address):
+
         if value in ['MAX_RED','MAX_BLUE','MAX_GREEN','MAX_ALPHA']:
             value = 255
         
@@ -197,6 +204,7 @@ class VirtualMachine:
             value = beexlHelper.canvas.width if value == 'IMAGE_WIDTH' else beexlHelper.canvas.height
 
         if ':' in str(value):
+
             info = value.split(":")
             data_type,memory_place = info[0],int(info[1])
             value = self.stack[self.stackDepth][1].GetMemoryValue(memory_place,data_type)
@@ -212,9 +220,12 @@ class VirtualMachine:
             else:
                 self.graphicMap[place] = int(value)
         elif address != None:
+
             data_type = address.split(':')[0]
             memory_place = int(address.split(':')[1])
+
             self.stack[self.stackDepth][1].AssignMemoryValue(data_type,memory_place,value)
+            
         else:
             self.graphicMap[place] = int(value)
         
@@ -222,10 +233,11 @@ class VirtualMachine:
 
     def GraphicAssign(self,graphic_type,place):
         info = place.split(':')
-        data_type, memory_place = info[0], int(info[1]) 
+        data_type, memory_place = info[0], int(info[1])  
         attributes = ['r','g','b','a'] if graphic_type == 'c'else ['x','y']
         for i in range(len(attributes)):
             self.stack[self.stackDepth][1].AssignMemoryValue(data_type,memory_place + i,self.graphicMap[attributes[i]])
+
         self.stack[self.stackDepth][0] += 1
    
     def ReturnHelper(self,value,stack):
@@ -295,17 +307,18 @@ class VirtualMachine:
 
     def EraHelper(self):
         self.stackDepth += 1
-        self.stack[self.stackDepth][0] = self.stack[self.stackDepth - 1][0]
-        self.stack[self.stackDepth][1].memory_table = copy.deepcopy( self.stack[self.stackDepth - 1][1].memory_table )
         preStack = self.stack[self.stackDepth - 1]
+        self.stack[self.stackDepth][0] = self.stack[self.stackDepth - 1][0]
+        self.stack[self.stackDepth][1].global_memory = preStack[1].global_memory
+        self.stack[self.stackDepth][1].memory_table = copy.deepcopy( preStack[1].memory_table )
         preStack[0] += 1
-        while preStack[0] < len(self.quadruples) and self.quadruples[preStack[0]] != "GOSUB":
 
+        while preStack[0] < len(self.quadruples) and self.quadruples[preStack[0]] != "GOSUB":
             operation = self.quadruples[preStack[0]][0]
             depth = self.stackDepth - 1 if operation != "PARAM" else self.stackDepth 
 
             self.functions[operation](self.quadruples[preStack[0]], depth )
-            if operation in ['PARAM']:
+            if operation in ['PARAM','ERA']:
                 preStack[0] += 1
 
             if operation == "GOSUB":
