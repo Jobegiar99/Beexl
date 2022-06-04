@@ -165,7 +165,6 @@ BLUE:'b';
 ALPHA:'a';
 IF:'if';
 ELSE:'else';
-FROM:'from';
 TO:'to';
 WHILE:'while';
 CANVAS_WIDTH:'CANVAS_WIDTH';

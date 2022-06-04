@@ -11,7 +11,7 @@ else:
 
 def serializedATN():
     with StringIO() as buf:
-        buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3E")
+        buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3D")
         buf.write("\u0202\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7")
         buf.write("\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t\13\4\f\t\f\4\r\t\r\4\16")
         buf.write("\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22\4\23\t\23")
@@ -59,8 +59,8 @@ def serializedATN():
         buf.write("\n@\f@\16@\u01fa\13@\3@\3@\3A\3A\3A\3A\3A\2\2B\2\4\6\b")
         buf.write("\n\f\16\20\22\24\26\30\32\34\36 \"$&(*,.\60\62\64\668")
         buf.write(":<>@BDFHJLNPRTVXZ\\^`bdfhjlnprtvxz|~\u0080\2\13\4\2\37")
-        buf.write(" \65\66\3\2*-\3\2@A\3\2\r\22\3\2\23\24\3\2\25\26\4\2B")
-        buf.write("CEE\3\2\63\64\3\2\67:\2\u01f5\2\u0082\3\2\2\2\4\u0096")
+        buf.write(" \65\66\3\2*-\3\2?@\3\2\r\22\3\2\23\24\3\2\25\26\4\2A")
+        buf.write("BDD\3\2\63\64\3\2\67:\2\u01f5\2\u0082\3\2\2\2\4\u0096")
         buf.write("\3\2\2\2\6\u0098\3\2\2\2\b\u009e\3\2\2\2\n\u00a2\3\2\2")
         buf.write("\2\f\u00a4\3\2\2\2\16\u00b1\3\2\2\2\20\u00b3\3\2\2\2\22")
         buf.write("\u00b5\3\2\2\2\24\u00be\3\2\2\2\26\u00c0\3\2\2\2\30\u00c2")
@@ -84,12 +84,12 @@ def serializedATN():
         buf.write("\2\2\2\u0087\u008a\3\2\2\2\u0088\u0086\3\2\2\2\u0088\u0089")
         buf.write("\3\2\2\2\u0089\u008b\3\2\2\2\u008a\u0088\3\2\2\2\u008b")
         buf.write("\u008c\5t;\2\u008c\3\3\2\2\2\u008d\u008e\7\34\2\2\u008e")
-        buf.write("\u008f\7D\2\2\u008f\u0097\7\3\2\2\u0090\u0091\7\35\2\2")
-        buf.write("\u0091\u0092\7D\2\2\u0092\u0093\7\3\2\2\u0093\u0094\5")
+        buf.write("\u008f\7C\2\2\u008f\u0097\7\3\2\2\u0090\u0091\7\35\2\2")
+        buf.write("\u0091\u0092\7C\2\2\u0092\u0093\7\3\2\2\u0093\u0094\5")
         buf.write("\6\4\2\u0094\u0095\5\b\5\2\u0095\u0097\3\2\2\2\u0096\u008d")
         buf.write("\3\2\2\2\u0096\u0090\3\2\2\2\u0097\5\3\2\2\2\u0098\u0099")
-        buf.write("\7\36\2\2\u0099\u009a\7B\2\2\u009a\u009b\7\4\2\2\u009b")
-        buf.write("\u009c\7B\2\2\u009c\u009d\7\3\2\2\u009d\7\3\2\2\2\u009e")
+        buf.write("\7\36\2\2\u0099\u009a\7A\2\2\u009a\u009b\7\4\2\2\u009b")
+        buf.write("\u009c\7A\2\2\u009c\u009d\7\3\2\2\u009d\7\3\2\2\2\u009e")
         buf.write("\u009f\7\"\2\2\u009f\u00a0\5\f\7\2\u00a0\u00a1\7\3\2\2")
         buf.write("\u00a1\t\3\2\2\2\u00a2\u00a3\t\2\2\2\u00a3\13\3\2\2\2")
         buf.write("\u00a4\u00a5\7\37\2\2\u00a5\u00a6\7\5\2\2\u00a6\u00a7")
@@ -104,11 +104,11 @@ def serializedATN():
         buf.write("\u00bc\u00bf\5\26\f\2\u00bd\u00bf\5B\"\2\u00be\u00bc\3")
         buf.write("\2\2\2\u00be\u00bd\3\2\2\2\u00bf\25\3\2\2\2\u00c0\u00c1")
         buf.write("\t\4\2\2\u00c1\27\3\2\2\2\u00c2\u00c3\7#\2\2\u00c3\u00c4")
-        buf.write("\7E\2\2\u00c4\u00c5\7\7\2\2\u00c5\u00c6\5\n\6\2\u00c6")
+        buf.write("\7D\2\2\u00c4\u00c5\7\7\2\2\u00c5\u00c6\5\n\6\2\u00c6")
         buf.write("\u00c7\7\3\2\2\u00c7\31\3\2\2\2\u00c8\u00cc\5 \21\2\u00c9")
         buf.write("\u00cc\5\64\33\2\u00ca\u00cc\5\34\17\2\u00cb\u00c8\3\2")
         buf.write("\2\2\u00cb\u00c9\3\2\2\2\u00cb\u00ca\3\2\2\2\u00cc\33")
-        buf.write("\3\2\2\2\u00cd\u00ce\7?\2\2\u00ce\u00cf\7\5\2\2\u00cf")
+        buf.write("\3\2\2\2\u00cd\u00ce\7>\2\2\u00ce\u00cf\7\5\2\2\u00cf")
         buf.write("\u00d0\5:\36\2\u00d0\u00d1\7\6\2\2\u00d1\u00d2\5\36\20")
         buf.write("\2\u00d2\35\3\2\2\2\u00d3\u00d5\7\b\2\2\u00d4\u00d6\5")
         buf.write(" \21\2\u00d5\u00d4\3\2\2\2\u00d6\u00d7\3\2\2\2\u00d7\u00d5")
@@ -125,13 +125,13 @@ def serializedATN():
         buf.write("\2\2\2\u00e9\u00e6\3\2\2\2\u00e9\u00e7\3\2\2\2\u00e9\u00e8")
         buf.write("\3\2\2\2\u00ea!\3\2\2\2\u00eb\u00ec\7!\2\2\u00ec\u00ed")
         buf.write("\7\3\2\2\u00ed#\3\2\2\2\u00ee\u00ef\7/\2\2\u00ef\u00f0")
-        buf.write("\7B\2\2\u00f0\u00f1\7\3\2\2\u00f1%\3\2\2\2\u00f2\u00f5")
-        buf.write("\7.\2\2\u00f3\u00f6\7E\2\2\u00f4\u00f6\5\22\n\2\u00f5")
+        buf.write("\7A\2\2\u00f0\u00f1\7\3\2\2\u00f1%\3\2\2\2\u00f2\u00f5")
+        buf.write("\7.\2\2\u00f3\u00f6\7D\2\2\u00f4\u00f6\5\22\n\2\u00f5")
         buf.write("\u00f3\3\2\2\2\u00f5\u00f4\3\2\2\2\u00f6\u00f7\3\2\2\2")
-        buf.write("\u00f7\u00fa\7\4\2\2\u00f8\u00fb\7E\2\2\u00f9\u00fb\5")
+        buf.write("\u00f7\u00fa\7\4\2\2\u00f8\u00fb\7D\2\2\u00f9\u00fb\5")
         buf.write("\f\7\2\u00fa\u00f8\3\2\2\2\u00fa\u00f9\3\2\2\2\u00fb\u00fc")
         buf.write("\3\2\2\2\u00fc\u00fd\7\3\2\2\u00fd\'\3\2\2\2\u00fe\u00ff")
-        buf.write("\7E\2\2\u00ff\u0103\7\n\2\2\u0100\u0104\5:\36\2\u0101")
+        buf.write("\7D\2\2\u00ff\u0103\7\n\2\2\u0100\u0104\5:\36\2\u0101")
         buf.write("\u0104\5\22\n\2\u0102\u0104\5\f\7\2\u0103\u0100\3\2\2")
         buf.write("\2\u0103\u0101\3\2\2\2\u0103\u0102\3\2\2\2\u0104\u0105")
         buf.write("\3\2\2\2\u0105\u0106\7\3\2\2\u0106)\3\2\2\2\u0107\u010a")
@@ -179,21 +179,21 @@ def serializedATN():
         buf.write("\2\2\u016c\u016b\3\2\2\2\u016dO\3\2\2\2\u016e\u0171\5")
         buf.write("h\65\2\u016f\u0171\5R*\2\u0170\u016e\3\2\2\2\u0170\u016f")
         buf.write("\3\2\2\2\u0171Q\3\2\2\2\u0172\u0173\t\b\2\2\u0173S\3\2")
-        buf.write("\2\2\u0174\u0175\7#\2\2\u0175\u0176\7E\2\2\u0176\u0177")
-        buf.write("\7\27\2\2\u0177\u0178\7B\2\2\u0178\u0179\7\30\2\2\u0179")
+        buf.write("\2\2\u0174\u0175\7#\2\2\u0175\u0176\7D\2\2\u0176\u0177")
+        buf.write("\7\27\2\2\u0177\u0178\7A\2\2\u0178\u0179\7\30\2\2\u0179")
         buf.write("\u017a\7\7\2\2\u017a\u017b\5\n\6\2\u017b\u017c\7\3\2\2")
-        buf.write("\u017cU\3\2\2\2\u017d\u017e\7E\2\2\u017e\u017f\7\27\2")
+        buf.write("\u017cU\3\2\2\2\u017d\u017e\7D\2\2\u017e\u017f\7\27\2")
         buf.write("\2\u017f\u0180\5X-\2\u0180\u0181\7\30\2\2\u0181W\3\2\2")
-        buf.write("\2\u0182\u0183\5B\"\2\u0183Y\3\2\2\2\u0184\u0185\7E\2")
+        buf.write("\2\u0182\u0183\5B\"\2\u0183Y\3\2\2\2\u0184\u0185\7D\2")
         buf.write("\2\u0185\u0186\7\27\2\2\u0186\u0187\5\\/\2\u0187\u0188")
         buf.write("\7\30\2\2\u0188\u0189\7\n\2\2\u0189\u018a\5^\60\2\u018a")
         buf.write("\u018b\7\3\2\2\u018b[\3\2\2\2\u018c\u018d\5B\"\2\u018d")
         buf.write("]\3\2\2\2\u018e\u018f\5B\"\2\u018f_\3\2\2\2\u0190\u0191")
-        buf.write("\7E\2\2\u0191\u0195\7\5\2\2\u0192\u0194\5d\63\2\u0193")
+        buf.write("\7D\2\2\u0191\u0195\7\5\2\2\u0192\u0194\5d\63\2\u0193")
         buf.write("\u0192\3\2\2\2\u0194\u0197\3\2\2\2\u0195\u0193\3\2\2\2")
         buf.write("\u0195\u0196\3\2\2\2\u0196\u0198\3\2\2\2\u0197\u0195\3")
         buf.write("\2\2\2\u0198\u0199\7\6\2\2\u0199a\3\2\2\2\u019a\u019b")
-        buf.write("\7E\2\2\u019b\u019f\7\5\2\2\u019c\u019e\5d\63\2\u019d")
+        buf.write("\7D\2\2\u019b\u019f\7\5\2\2\u019c\u019e\5d\63\2\u019d")
         buf.write("\u019c\3\2\2\2\u019e\u01a1\3\2\2\2\u019f\u019d\3\2\2\2")
         buf.write("\u019f\u01a0\3\2\2\2\u01a0\u01a2\3\2\2\2\u01a1\u019f\3")
         buf.write("\2\2\2\u01a2\u01a3\7\6\2\2\u01a3c\3\2\2\2\u01a4\u01a9")
@@ -202,8 +202,8 @@ def serializedATN():
         buf.write("\u01a9\u01aa\3\2\2\2\u01aae\3\2\2\2\u01ab\u01a9\3\2\2")
         buf.write("\2\u01ac\u01ad\5B\"\2\u01adg\3\2\2\2\u01ae\u01af\7\5\2")
         buf.write("\2\u01af\u01b0\5:\36\2\u01b0\u01b1\7\6\2\2\u01b1i\3\2")
-        buf.write("\2\2\u01b2\u01b3\7E\2\2\u01b3\u01b4\7\31\2\2\u01b4\u01b5")
-        buf.write("\t\t\2\2\u01b5k\3\2\2\2\u01b6\u01b7\7E\2\2\u01b7\u01b8")
+        buf.write("\2\2\u01b2\u01b3\7D\2\2\u01b3\u01b4\7\31\2\2\u01b4\u01b5")
+        buf.write("\t\t\2\2\u01b5k\3\2\2\2\u01b6\u01b7\7D\2\2\u01b7\u01b8")
         buf.write("\7\31\2\2\u01b8\u01b9\5n8\2\u01b9m\3\2\2\2\u01ba\u01bb")
         buf.write("\t\n\2\2\u01bbo\3\2\2\2\u01bc\u01c1\7\b\2\2\u01bd\u01c0")
         buf.write("\5\30\r\2\u01be\u01c0\5\32\16\2\u01bf\u01bd\3\2\2\2\u01bf")
@@ -216,14 +216,14 @@ def serializedATN():
         buf.write("\3\2\2\2\u01d0\u01ce\3\2\2\2\u01d0\u01d1\3\2\2\2\u01d1")
         buf.write("\u01d3\3\2\2\2\u01d2\u01d0\3\2\2\2\u01d3\u01d4\5r:\2\u01d4")
         buf.write("u\3\2\2\2\u01d5\u01d6\7$\2\2\u01d6\u01d7\5x=\2\u01d7\u01d8")
-        buf.write("\7E\2\2\u01d8\u01dc\7\5\2\2\u01d9\u01db\5z>\2\u01da\u01d9")
+        buf.write("\7D\2\2\u01d8\u01dc\7\5\2\2\u01d9\u01db\5z>\2\u01da\u01d9")
         buf.write("\3\2\2\2\u01db\u01de\3\2\2\2\u01dc\u01da\3\2\2\2\u01dc")
         buf.write("\u01dd\3\2\2\2\u01dd\u01df\3\2\2\2\u01de\u01dc\3\2\2\2")
         buf.write("\u01df\u01e0\7\6\2\2\u01e0\u01e1\5|?\2\u01e1w\3\2\2\2")
         buf.write("\u01e2\u01e5\5\n\6\2\u01e3\u01e5\7%\2\2\u01e4\u01e2\3")
         buf.write("\2\2\2\u01e4\u01e3\3\2\2\2\u01e5y\3\2\2\2\u01e6\u01e7")
-        buf.write("\7E\2\2\u01e7\u01e8\7\7\2\2\u01e8\u01e9\5\n\6\2\u01e9")
-        buf.write("\u01ea\7\4\2\2\u01ea\u01ef\3\2\2\2\u01eb\u01ec\7E\2\2")
+        buf.write("\7D\2\2\u01e7\u01e8\7\7\2\2\u01e8\u01e9\5\n\6\2\u01e9")
+        buf.write("\u01ea\7\4\2\2\u01ea\u01ef\3\2\2\2\u01eb\u01ec\7D\2\2")
         buf.write("\u01ec\u01ed\7\7\2\2\u01ed\u01ef\5\n\6\2\u01ee\u01e6\3")
         buf.write("\2\2\2\u01ee\u01eb\3\2\2\2\u01ef{\3\2\2\2\u01f0\u01f1")
         buf.write("\5~@\2\u01f1}\3\2\2\2\u01f2\u01f8\7\b\2\2\u01f3\u01f7")
@@ -260,8 +260,7 @@ class beexlParser ( Parser ):
                      "'MAX_BLUE'", "'MAX_GREEN'", "'MAX_ALPHA'", "'fill'", 
                      "'await'", "'.png'", "'.jpg'", "'.jpeg'", "'x'", "'y'", 
                      "'int'", "'float'", "'r'", "'g'", "'b'", "'a'", "'if'", 
-                     "'else'", "'from'", "'to'", "'while'", "'CANVAS_WIDTH'", 
-                     "'CANVAS_HEIGHT'" ]
+                     "'else'", "'to'", "'while'", "'CANVAS_WIDTH'", "'CANVAS_HEIGHT'" ]
 
     symbolicNames = [ "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                       "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
@@ -274,8 +273,8 @@ class beexlParser ( Parser ):
                       "VOID", "MAIN", "RETURN", "PRINT", "SHOW_CANVAS", 
                       "MAX_RED", "MAX_BLUE", "MAX_GREEN", "MAX_ALPHA", "FILL", 
                       "AWAIT", "PNG", "JPG", "JPEG", "X", "Y", "INT", "FLOAT", 
-                      "RED", "GREEN", "BLUE", "ALPHA", "IF", "ELSE", "FROM", 
-                      "TO", "WHILE", "CANVAS_WIDTH", "CANVAS_HEIGHT", "NUMBER", 
+                      "RED", "GREEN", "BLUE", "ALPHA", "IF", "ELSE", "TO", 
+                      "WHILE", "CANVAS_WIDTH", "CANVAS_HEIGHT", "NUMBER", 
                       "DECIMAL_NUMBER", "STRINGFILENAME", "ID" ]
 
     RULE_fileconfig0 = 0
@@ -419,15 +418,14 @@ class beexlParser ( Parser ):
     ALPHA=56
     IF=57
     ELSE=58
-    FROM=59
-    TO=60
-    WHILE=61
-    CANVAS_WIDTH=62
-    CANVAS_HEIGHT=63
-    NUMBER=64
-    DECIMAL_NUMBER=65
-    STRINGFILENAME=66
-    ID=67
+    TO=59
+    WHILE=60
+    CANVAS_WIDTH=61
+    CANVAS_HEIGHT=62
+    NUMBER=63
+    DECIMAL_NUMBER=64
+    STRINGFILENAME=65
+    ID=66
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -1890,7 +1888,7 @@ class beexlParser ( Parser ):
                 self.state = 274 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if not (_la==beexlParser.T__2 or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & ((1 << (beexlParser.NUMBER - 64)) | (1 << (beexlParser.DECIMAL_NUMBER - 64)) | (1 << (beexlParser.ID - 64)))) != 0)):
+                if not (((((_la - 3)) & ~0x3f) == 0 and ((1 << (_la - 3)) & ((1 << (beexlParser.T__2 - 3)) | (1 << (beexlParser.NUMBER - 3)) | (1 << (beexlParser.DECIMAL_NUMBER - 3)) | (1 << (beexlParser.ID - 3)))) != 0)):
                     break
 
             self.state = 276
@@ -2280,7 +2278,7 @@ class beexlParser ( Parser ):
             self.state = 321
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << beexlParser.T__2) | (1 << beexlParser.T__8) | (1 << beexlParser.T__9))) != 0) or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & ((1 << (beexlParser.NUMBER - 64)) | (1 << (beexlParser.DECIMAL_NUMBER - 64)) | (1 << (beexlParser.ID - 64)))) != 0):
+            if ((((_la - 3)) & ~0x3f) == 0 and ((1 << (_la - 3)) & ((1 << (beexlParser.T__2 - 3)) | (1 << (beexlParser.T__8 - 3)) | (1 << (beexlParser.T__9 - 3)) | (1 << (beexlParser.NUMBER - 3)) | (1 << (beexlParser.DECIMAL_NUMBER - 3)) | (1 << (beexlParser.ID - 3)))) != 0):
                 self.state = 320
                 self.hyperExp1()
 
@@ -2952,7 +2950,7 @@ class beexlParser ( Parser ):
             self.enterOuterAlt(localctx, 1)
             self.state = 368
             _la = self._input.LA(1)
-            if not(((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & ((1 << (beexlParser.NUMBER - 64)) | (1 << (beexlParser.DECIMAL_NUMBER - 64)) | (1 << (beexlParser.ID - 64)))) != 0)):
+            if not(((((_la - 63)) & ~0x3f) == 0 and ((1 << (_la - 63)) & ((1 << (beexlParser.NUMBER - 63)) | (1 << (beexlParser.DECIMAL_NUMBER - 63)) | (1 << (beexlParser.ID - 63)))) != 0)):
                 self._errHandler.recoverInline(self)
             else:
                 self._errHandler.reportMatch(self)
@@ -3314,7 +3312,7 @@ class beexlParser ( Parser ):
             self.state = 403
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==beexlParser.T__2 or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & ((1 << (beexlParser.NUMBER - 64)) | (1 << (beexlParser.DECIMAL_NUMBER - 64)) | (1 << (beexlParser.ID - 64)))) != 0):
+            while ((((_la - 3)) & ~0x3f) == 0 and ((1 << (_la - 3)) & ((1 << (beexlParser.T__2 - 3)) | (1 << (beexlParser.NUMBER - 3)) | (1 << (beexlParser.DECIMAL_NUMBER - 3)) | (1 << (beexlParser.ID - 3)))) != 0):
                 self.state = 400
                 self.functionCall1()
                 self.state = 405
@@ -3377,7 +3375,7 @@ class beexlParser ( Parser ):
             self.state = 413
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==beexlParser.T__2 or ((((_la - 64)) & ~0x3f) == 0 and ((1 << (_la - 64)) & ((1 << (beexlParser.NUMBER - 64)) | (1 << (beexlParser.DECIMAL_NUMBER - 64)) | (1 << (beexlParser.ID - 64)))) != 0):
+            while ((((_la - 3)) & ~0x3f) == 0 and ((1 << (_la - 3)) & ((1 << (beexlParser.T__2 - 3)) | (1 << (beexlParser.NUMBER - 3)) | (1 << (beexlParser.DECIMAL_NUMBER - 3)) | (1 << (beexlParser.ID - 3)))) != 0):
                 self.state = 410
                 self.functionCall1()
                 self.state = 415

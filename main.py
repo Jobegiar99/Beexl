@@ -183,19 +183,25 @@ fun void dorime ( limit: int ) {
 
 fun void song () {
     var upperLimit:int;
-    var lowerLimit: int;
-    upperLimit = 90;
-    lowerLimit = 9;
+    var lowerLimit: int; 
+    upperLimit = 99;
+    lowerLimit = 1;
+    
     while ( upperLimit > lowerLimit ){
-        ameno ( upperLimit );
+        row = vector ( upperLimit, upperLimit  );
+        
         ingerimo ( upperLimit  );
-        adapare ( lowerLimit + 1  );
+        adapare ( lowerLimit   );
         dorime ( lowerLimit + 1);
         upperLimit = upperLimit - 1;
         lowerLimit = lowerLimit + 1;
-    }
+        if ( )
+        color = rgba ( lowerLimit + 1, lowerLimit + 1, lowerLimit + 1, 255 ) ;
+        print ( color.r color.g color.b );
 
+    }
 }
+
 
 fun void main (){
 
@@ -209,7 +215,6 @@ fun void main (){
 
 
     song ( ) ;
-
     save_animation ;
 }
 
