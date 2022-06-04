@@ -7,134 +7,20 @@ from collections import defaultdict
 from beexlSemantic import *
 from VirtualMachine import VirtualMachine, virtualMachine
 from memoryManager import MemoryManager
-"""
-TO DO: add rules to handle special words with a parenthesis and no space
-"""
 
-test_valid_4 = """
-filename read "beexl.png";
-
-fun void ameno ( ol : int, ulu: int ){
-    if ( 4 < 3 )
-    {
-        ameno ( ol , ulu ) ;
-    }
-    else
-    {
-        print ( ol , ulu ) ;
-    }
-}
-
-fun void main (){
-    var olo:int;
-    var elu: int;
-    var ele:rgba;
-    var ulu:vector;
-    olo = 4 ;
-    elu = olo * 2 + ( 10 / 2  + ( 14 * ( 2 / 2 )));
-    ele = rgba ( 255 , 255 , 255  , 255 );
-    ulu = vector ( 14 , 15 );
-    if ( 13 * 23 < 14 + 12 ){
-        print ( olo, elu );
-    }
-    fill ulu , ele ;
-    ameno ( olo , olo );
-    while ( olo < (olo / 2) + 4 ){
-        olo = olo + 1 ;
-    }
-}
-"""
-
-test_valid_5 = """
-filename read "beexl.png";
-
-var color: rgba;
-var dot: rgba;
-var previous: vector;
-var current: vector;
-var increment: int;
-var row: int;
-
-fun int ameno ( olo:int ) {
-    fill previous , color;
-    fill current , dot;
-    previous = vector ( row  , 20 );
-    row = row + increment;
-    current = vector ( row , 20 );
-    show_canvas ;
-    if ( ( increment == 1 && row < 100 ) || ( increment == -1 && row > 0 )  ){
-        row = ameno ( 2 );
-    }
-    return olo ;
-}
-
-fun int test ( ol: int ) {
-    return ( ol * ol ) ;
-}
-
-fun void main (){
-    var iterations : int;
-    iterations = 0 ;
-    row = 4;
-    increment = 1;
-    color = rgba ( MAX_RED , 225 , 120, 255 ) ;
-    dot = rgba ( MAX_RED , 0 , 0 , MAX_ALPHA );
-    previous = vector ( 0 , 2 );
-    current = vector ( 0 , 2 );
-    row = test ( 123 )  ;
-    while ( iterations < 100  ){
-        increment = 1;
-        increment = -1;
-        color.r = 4;
-        color.g = 2;
-        color.b = 4;
-        color.a = 123 + color.r - 123;
-        increment = ameno ( 2 );
-        iterations = iterations + 1;
-    }
-}
-"""
-
-test_valid_6 = """
-filename read "beexl.png";
-
-var row: int;
-
-fun void main (){
-    var olo : int;
-    var elu : int;
-    var ele : rgba;
-    var ulu : vector;
-    row = 0;
-    olo = 4 ;
-    elu = olo ;
-    ele = rgba ( 255 , 255 ,  325 , 255 );
-    ulu = vector ( olo , olo * 2 + 3 + 4 + 5 + 6 + 7 + 8 ) ;
-    var first: int;
-    var second:int;
-    show_canvas;
-    await 1000 ;
-    show_canvas;
-}
-"""
-
-test_valid_7 = """
-filename read "beexl.png"
-
-fun void main () {
-    var al: vector; 
-}
-"""
 
 test_print = """
-filename read "beexl.png"
+filename create "beexl.png";
+canvas 100,100;
+background rgba ( 10 , 10 , 10 , 244 );
 
 fun int test ( value:int ){
     return  value * value ;
 }
 
 fun void main () {
-    print ( 4 * 2 - 2 , test ( test ( 2 * test ( 2 * test ( 2 ) ) * test ( 2 ) ) ) * test ( 2 ) );
+
+    print ( 4 * 2 - 2 , test ( 232 )  - test ( 231 ));
     print ( 3 );
     await 1000;
     show_canvas;
@@ -152,16 +38,23 @@ var col:int;
 fun void sortArray ( ) {
     var i: int;
     var j: int;
-    var smallest: int;
-    var arr2Copy[ 5 ]: int;
+    var temp: int;
     i = 0;
     
     while ( i < 5 ) {
-        j = 0;
-        while ( j < 1 ) {
+
+        j = i + 1 ;
+
+        while ( j < 5 ) {
+
+            if ( arr2 [ i ] < arr2 [ j ] ) {
+                temp = arr2[j] ;
+                arr2[j] = arr2[i];
+                arr2[i] = temp ;
+            }
             j = j + 1;
-            print ( 69  );
         }
+        print ( i );
         i = i + 1;
     }
 }
@@ -170,7 +63,7 @@ fun void main () {
     var i: int;
     i = 0;
     while ( i < 4 ){
-        arr1 [ i ] = i * 2 ;
+        arr1 [ i ] = i + 2 ;
         print ( arr1 [ i ] );
         i = i + 1;
     }
@@ -178,7 +71,6 @@ fun void main () {
     i = 0;
     while ( i < 5 ){
         arr2[i] = 5 - i;
-        print ( arr2[i] );
         i = i + 1;
     }
     sortArray ();
@@ -240,7 +132,96 @@ fun void main (){
 }
 """
 
-tests = [array_test]
+ameno = """
+filename create "square.png";
+canvas 100,100 ;
+background rgba ( 0, 0 , 0 ,255);
+
+var row : vector;
+var color:rgba;
+
+fun void ameno ( limit: int ) {
+    row = vector ( 10, 10 );
+    while ( row.x < limit ){
+    
+        fill row, color;
+
+        row.x = row.x + 1;
+    }
+}
+
+fun void ingerimo ( limit: int ) {
+
+    while ( row.y < limit ) {
+
+        fill row , color;
+
+        row.y = row.y + 1;
+    }
+}
+
+fun void adapare ( limit: int ) {
+
+    while ( row.x > limit ) {
+
+        fill row, color;
+
+        row.x = row.x - 1;
+
+    }
+}
+
+fun void dorime ( limit: int ) {
+
+    while ( row.y > limit ){
+
+        fill row, color;
+
+        row.y = row.y - 1;
+    }
+}
+
+fun void song () {
+    var upperLimit:int;
+    var lowerLimit: int; 
+    upperLimit = 99;
+    lowerLimit = 1;
+    
+    while ( upperLimit > lowerLimit ){
+        row = vector ( upperLimit, upperLimit  );
+        
+        ingerimo ( upperLimit  );
+        adapare ( lowerLimit   );
+        dorime ( lowerLimit + 1);
+        upperLimit = upperLimit - 1;
+        lowerLimit = lowerLimit + 1;
+        if ( )
+        color = rgba ( lowerLimit + 1, lowerLimit + 1, lowerLimit + 1, 255 ) ;
+        print ( color.r color.g color.b );
+
+    }
+}
+
+
+fun void main (){
+
+    color = rgba ( 255, 255 ,255 ,255) ;
+
+    var olo: vector;
+
+    olo = vector ( 1012 ,  10 );
+
+    row = vector ( 10 , 10 );
+
+
+    song ( ) ;
+    save_animation ;
+}
+
+"""
+
+
+tests = [ameno]
 
 for test in tests:
     lexer = beexlLexer(InputStream(test))

@@ -27,6 +27,10 @@ class beexlListener(ParseTreeListener):
     def enterVector1(self,ctx:beexlParser.Vector1Context):
         beexlSemantic.restartStacks()
         beexlSemantic.vector_index += 1
+        
+    def enterShowCanvasChanges0(self,ctx:beexlParser.ShowCanvasChanges0Context):
+        beexlSemantic.addQuadruple(["ANIMATE"])
+    
 
     def enterArrayInit0(self,ctx:beexlParser.ArrayInit0Context):
         info = ctx.getText().split(':')
@@ -271,7 +275,9 @@ class beexlListener(ParseTreeListener):
         beexlSemantic.restartStacks()
 
     def exitSpecialAssignment0(self, ctx:beexlParser.SpecialAssignment0Context):
+
         info = ctx.getText().split('=')
+        
         assign_info = info[0].split('.')
         attribute = assign_info[1]
         attribute_id = assign_info[0]
@@ -286,8 +292,15 @@ class beexlListener(ParseTreeListener):
         
         if beexlSemantic.typeStack[-1] != 'int':
             beexlSemantic.stopExecution("Attributes must be integers")
-
-        beexlSemantic.addQuadruple([attribute,assignment,variable_info['memory']])
+        memory = int(variable_info['memory'].split(':')[1])
+        if attribute in ['y','g']:
+            memory += 1
+        if attribute == 'b':
+            memory += 2
+        if attribute == 'a':
+            memory += 3
+        target_address = variable_info['memory'].split(':')[0] + ':' + str(memory)
+        beexlSemantic.addQuadruple([attribute,assignment,target_address])
 
     # Enter a parse tree produced by beexlParser#print0.
     def enterShowCanvas0(self, ctx:beexlParser.ShowCanvas0Context):
@@ -314,9 +327,10 @@ class beexlListener(ParseTreeListener):
         beexlSemantic.addQuadruple(["GOTO F",beexlSemantic.operandStack[0].pop()])
         beexlSemantic.jumpStack.append(len(beexlSemantic.quadruples) - 1)
 
+
     # Exit a parse tree produced by beexlParser#conditional0.
     def exitConditional1(self, ctx:beexlParser.Conditional1Context):
-        if len(beexlSemantic.jumpStack) > 1:
+        if len(beexlSemantic.jumpStack) > 1 and 'else' in ctx.getText():
             else_line = beexlSemantic.jumpStack.pop()
             if_line = beexlSemantic.jumpStack.pop()
             beexlSemantic.quadruples[if_line] += [else_line + 1]
@@ -425,8 +439,16 @@ class beexlListener(ParseTreeListener):
                 
                 if len(info[1]) > 1 or info[1] not in ['r','g','b','a','x','y']:
                     continue
-
+                attribute = ctx.getText().split('.')[1]
                 t_value,t_type = FactorHelper(info[0])
+                memory = int(t_value.split(':')[1])
+                if attribute in ['y','g']:
+                    memory += 1
+                if attribute == 'b':
+                    memory += 2
+                if attribute == 'a':
+                    memory += 3
+                t_value = t_value.split(':')[0] + ':' + str(memory)
                 if t_type:
                     t_type += '.' + info[1]
 
@@ -526,7 +548,7 @@ class beexlListener(ParseTreeListener):
             myType = myType[:-1]
 
         if myType not in ['vector','int','rgba','float']:
-            beexlSemantic.stopExecution("Invalid type in function parameter declaration:",myType)
+            beexlSemantic.stopExecution("Invalid type in function parameter declaration:" + myType)
 
     def exitFunctionDefinition3(self, ctx:beexlParser.FunctionDefinition3Context):
         beexlSemantic.addQuadruple(["ENDFUNC"])

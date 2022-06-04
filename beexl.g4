@@ -2,7 +2,7 @@ grammar beexl;
 
 fileconfig0 :FILENAME fileconfig1 (vars0|arrayInit0)* body0;
 fileconfig1:READ STRINGFILENAME';'
-                        |CREATE STRINGFILENAME';'canvas0 background0;
+           |CREATE STRINGFILENAME';'canvas0 background0;
 
 canvas0:CANVAS NUMBER','NUMBER';';
 
@@ -35,7 +35,10 @@ extras0:pixelFill0
         |arrayAssign0
         |await0
         |while0
-        |conditional0;
+        |conditional0
+        |showCanvasChanges0;
+
+showCanvasChanges0: ANIMATECHANGES';';
 
 await0: AWAIT NUMBER';';
 
@@ -134,6 +137,7 @@ CREATE: 'create';
 CANVAS: 'canvas';
 RGBA:'rgba';
 VECTOR:'vector';
+ANIMATECHANGES:'save_animation';
 BACKGROUND:'background';
 VAR:'var';
 FUNCTION:'fun';
@@ -161,13 +165,11 @@ BLUE:'b';
 ALPHA:'a';
 IF:'if';
 ELSE:'else';
-FROM:'from';
 TO:'to';
 WHILE:'while';
-DO:'do';
 CANVAS_WIDTH:'CANVAS_WIDTH';
 CANVAS_HEIGHT:'CANVAS_HEIGHT';
 NUMBER: '-'?[0-9]+;
 DECIMAL_NUMBER: NUMBER'.'[0-9]+;
 STRINGFILENAME: '"' .+?'.'('png'|'jpg'|'jpeg')'"';
-ID: [a-zA-Z]['_'(a-zA-Z0-9)+]*;
+ID: ([a-zA-Z]['_'(a-zA-Z0-9)+]*);
