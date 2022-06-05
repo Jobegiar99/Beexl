@@ -7,7 +7,7 @@ from collections import defaultdict
 from beexlSemantic import *
 from VirtualMachine import VirtualMachine, virtualMachine
 from memoryManager import MemoryManager
-
+from beexerErrorListener import BeexlErrorListener
 
 test_print = """
 filename create "beexl.png";
@@ -184,20 +184,23 @@ fun void dorime ( limit: int ) {
 fun void song () {
     var upperLimit:int;
     var lowerLimit: int; 
+    var control: int;
     upperLimit = 99;
     lowerLimit = 1;
-    
+    var fun : int;
+    int = int + 1;
+    control = 1;
     while ( upperLimit > lowerLimit ){
         row = vector ( upperLimit, upperLimit  );
         
         ingerimo ( upperLimit  );
         adapare ( lowerLimit   );
         dorime ( lowerLimit + 1);
-        upperLimit = upperLimit - 1;
+
         lowerLimit = lowerLimit + 1;
-        if ( )
-        color = rgba ( lowerLimit + 1, lowerLimit + 1, lowerLimit + 1, 255 ) ;
-        print ( color.r color.g color.b );
+    
+        color = rgba ( lowerLimit + control + 10, lowerLimit * control + 20, lowerLimit + control + 30, 255 ) ;
+        control = control + 1;
 
     }
 }
@@ -227,6 +230,7 @@ for test in tests:
     lexer = beexlLexer(InputStream(test))
     stream = CommonTokenStream(lexer)
     parser = beexlParser(stream)
+    parser.addErrorListener(BeexlErrorListener())
     tree = parser.fileconfig0()
     listener = beexlListener()
     ParseTreeWalker().walk(listener,tree)
