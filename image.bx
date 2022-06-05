@@ -1,0 +1,86 @@
+filename create "triangle.png";
+canvas 100,100 ;
+background rgba ( 0, 0 , 0 ,255);
+
+var row : vector;
+var color:rgba;
+
+fun void ameno ( limit: int ) {
+    row = vector ( 10, 10 );
+    while ( row.x < limit ){
+    
+        fill row, color;
+
+        row.x = row.x + 1;
+    }
+}
+
+fun void ingerimo ( limit: int ) {
+
+    while ( row.y < limit ) {
+
+        fill row , color;
+
+        row.y = row.y + 1;
+    }
+}
+
+fun void adapare ( limit: int ) {
+
+    while ( row.x > limit ) {
+
+        fill row, color;
+
+        row.x = row.x - 1;
+
+    }
+}
+
+fun void dorime ( limit: int ) {
+
+    while ( row.y > limit ){
+
+        fill row, color;
+
+        row.y = row.y - 1;
+    }
+}
+
+fun void song () {
+    var upperLimit:int;
+    var lowerLimit: int; 
+    var control: int;
+    upperLimit = 99;
+    lowerLimit = 1;
+
+    control = 1;
+    while ( upperLimit > lowerLimit ){
+        row = vector ( upperLimit, upperLimit  );
+        
+        ingerimo ( upperLimit  );
+        adapare ( lowerLimit   );
+        dorime ( lowerLimit + 1);
+
+        lowerLimit = lowerLimit + 1;
+    
+        color = rgba ( lowerLimit + control + 10, lowerLimit * control + 20, lowerLimit + control + 30, 255 ) ;
+        control = control + 1;
+
+    }
+}
+
+
+fun void main (){
+
+    color = rgba ( 255, 255 ,255 ,255) ;
+
+    var olo: vector;
+
+    olo = vector ( 1012 ,  10 );
+
+    row = vector ( 10 , 10 );
+
+
+    song ( ) ;
+    save_animation ;
+}

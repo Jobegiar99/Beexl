@@ -1,0 +1,61 @@
+filename read "beexl.png";
+var row:int;
+var arr1[ 4 ]:int;
+var arr2[ 5 ]:int;
+var col:int;
+
+
+fun int findElement ( element:int ){
+    var index: int;
+    index = 0;
+    while ( index < 4){
+        if ( element == arr1[index] ){
+            return index;
+        }else{
+            index = index + 1;
+        }
+    }
+    return -1;
+}
+
+fun void sortArray ( ) {
+    var i: int;
+    var j: int;
+    var temp: int;
+    i = 0;
+    
+    while ( i < 5 ) {
+
+        j = i + 1 ;
+
+        while ( j < 5 ) {
+
+            if ( arr2 [ i ] < arr2 [ j ] ) {
+                temp = arr2[j] ;
+                arr2[j] = arr2[i];
+                arr2[i] = temp ;
+            }
+            j = j + 1;
+        }
+        print ( i );
+        i = i + 1;
+    }
+}
+
+fun void main () {
+    var i: int;
+    i = 0;
+    while ( i < 4 ){
+        arr1 [ i ] = i + 2 ;
+        print ( arr1 [ i ] );
+        i = i + 1;
+    }
+    print ( ( arr1[ arr1[1] ] + arr1[3] ) * ( arr1[3] + arr1[3] ) );
+    i = 0;
+    while ( i < 5 ){
+        arr2[i] = 5 - i;
+        i = i + 1;
+    }
+    sortArray ();
+    print ( findElement ( 2 ) , findElement ( 1238 ) );
+}

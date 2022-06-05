@@ -1,0 +1,15 @@
+filename create "beexl.png";
+canvas 100,100;
+background rgba ( 10 , 10 , 10 , 244 );
+
+fun int test ( value:int ){
+    return  value * value ;
+}
+
+fun void main () {
+
+    print ( 4 * 2 - 2 , test ( 232 )  - test ( 231 ));
+    print ( 3 );
+    await 1000;
+    show_canvas;
+}
