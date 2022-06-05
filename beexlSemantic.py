@@ -28,8 +28,11 @@ class BeexlSemantic():
         self.param_index = -1
         self.current_parameters = {}
         self.correct_print = True
+        
 
     def getVariableInfo(self,name):
+        if name in self.function_table['reserved']:
+            self.stopExecution("Cannot use " + name + " as id.")
         if self.current_scope != "global":
             if name in self.function_table[self.current_scope]['variables']:
                 self.function_table[self.current_scope]['variables'][name]['scope'] = self.current_scope
