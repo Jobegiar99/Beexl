@@ -15,7 +15,6 @@ class MemoryManager:
         place = self.memory_table if 'global' not in data_type else self.global_memory
         lower_limit = place[data_type]['LL']
         index = memory_direction - lower_limit
-    
         place[data_type]['memory'][index] = value
         
     def GetMemoryValue(self,memory_direction, data_type):

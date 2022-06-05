@@ -7,7 +7,6 @@ from beexlParser import beexlParser
 from collections import defaultdict
 from beexlSemantic import *
 from VirtualMachine import VirtualMachine, virtualMachine
-from memoryManager import MemoryManager
 from beexelErrorListener import BeexlErrorListener
 
 test_print = """

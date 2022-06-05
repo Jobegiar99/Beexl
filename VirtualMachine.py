@@ -347,6 +347,8 @@ class VirtualMachine:
         target = self.quadruples[self.stack[self.stackDepth ][0] -1][-1]
         target_type = target.split(':')[0]
         target_memory = int(target.split(':')[1])
+
+        
         self.stack[self.stackDepth][1].AssignMemoryValue(target_type,target_memory,value)
         del memory_to_kill
 

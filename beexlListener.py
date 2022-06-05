@@ -9,8 +9,8 @@ else:
     from beexlParser import beexlParser
 
 from beexlSemantic import beexlSemantic
-from memoryManager import memory
-
+from memoryManager import MemoryManager, memory
+import copy
 # This class defines a complete listener for a parse tree produced by beexlParser.
 class beexlListener(ParseTreeListener):
 
@@ -79,7 +79,13 @@ class beexlListener(ParseTreeListener):
         if num < 1:
             beexlSemantic.stopExecution("Arrays must have a size greater or equal to one")
 
-        memory_location = data_type + ':' + str(memory.GetNewMemory(data_type,increment=num))
+        if 'global' not in data_type:
+            memory_location = data_type + ':' + str(beexlSemantic.temp_memory.GetNewMemory(data_type,increment=num))
+            if memory.memory_table[data_type]['counter'] < beexlSemantic.temp_memory.memory_table[data_type]['counter']:
+                memory.memory_table[data_type] = copy.deepcopy(beexlSemantic.temp_memory.memory_table[data_type])
+        else:
+            memory_location = data_type + ":" + str(memory.GetNewMemory(data_type,increment=num))
+
         beexlSemantic.function_table[beexlSemantic.current_scope]['variables'][arr_name] = \
             {'size':num,'memory':memory_location,'array':True}
 
@@ -98,7 +104,11 @@ class beexlListener(ParseTreeListener):
         result = beexlSemantic.operandStack[1].pop(-1)
         var_info = beexlSemantic.operandStack[0].pop(-1)
         beexlSemantic.addQuadruple(['VERIF',result,0,var_info['size'] - 1])
-        index_offset = 'pointer:'+str(memory.GetNewMemory('pointer'))
+
+        index_offset = 'pointer:'+str(beexlSemantic.temp_memory.GetNewMemory('pointer'))
+        if memory.memory_table['pointer']['counter'] < beexlSemantic.temp_memory.memory_table['pointer']['counter']:
+            memory.memory_table['pointer'] = copy.deepcopy(beexlSemantic.temp_memory.memory_table['pointer'])
+
         beexlSemantic.addQuadruple(['+p',var_info['memory'],result,index_offset])
         beexlSemantic.restartStacks()
         beexlSemantic.operandStack[beexlSemantic.operandDepth].append(index_offset)
@@ -121,9 +131,10 @@ class beexlListener(ParseTreeListener):
 
         beexlSemantic.addQuadruple(['VERIF',result,0, target['size'] - 1 ])
 
-        index_offset = 'pointer:'+str(memory.GetNewMemory('pointer'))
-        target_index = 'pointer:' + str(memory.GetNewMemory('pointer'))
-
+        index_offset = 'pointer:'+str(beexlSemantic.temp_memory.GetNewMemory('pointer'))
+        if memory.memory_table['pointer']['counter'] < beexlSemantic.temp_memory.memory_table['pointer']['counter']:
+            memory.memory_table['pointer'] = copy.deepcopy(beexlSemantic.temp_memory.memory_table['pointer'])
+ 
         #actualizar esto a pointers
         beexlSemantic.addQuadruple(['+p',target['memory'],result,index_offset])
         beexlSemantic.operandStack[beexlSemantic.operandDepth].append(index_offset)
@@ -294,6 +305,8 @@ class beexlListener(ParseTreeListener):
 
     # Exit a parse tree produced by beexlParser#functionDefinition0.
     def enterFunctionDefinition0(self, ctx:beexlParser.FunctionDefinition0Context):
+        beexlSemantic.temp_memory = MemoryManager()
+
         function_info = ctx.getText().split('{')[0].split('(')
         
         function_info[0] = function_info[0].split('fun')[1]
@@ -324,7 +337,11 @@ class beexlListener(ParseTreeListener):
         function_param_info = {}
         for index in range(len(function_param_types)):
             data_type = 'local_' + function_param_types[index]
-            memory_value = memory.GetNewMemory(data_type)
+            memory_value = beexlSemantic.temp_memory.GetNewMemory(data_type)
+
+            if memory.memory_table[data_type]['counter'] < beexlSemantic.temp_memory.memory_table[data_type]['counter']:
+                memory.memory_table[data_type] = copy.deepcopy(beexlSemantic.temp_memory.memory_table[data_type])
+
             param_memory = data_type + ":" + str(memory_value)
             if function_param_names[index] not in function_param_info:
                 function_param_info[function_param_names[index] ] = {}
@@ -691,7 +708,16 @@ class beexlListener(ParseTreeListener):
 
         scope = 'global' if beexlSemantic.current_scope == 'global' else 'local'
         data_type_for_memory = scope + '_' + var_type
-        memory_location = memory.GetNewMemory(data_type_for_memory)
+        if 'global' not in scope:
+            memory_location = beexlSemantic.temp_memory.GetNewMemory(data_type_for_memory)
+            if (
+                'global' not in data_type_for_memory and \
+                memory.memory_table[data_type_for_memory]['counter'] < \
+                beexlSemantic.temp_memory.memory_table[data_type_for_memory]['counter']
+            ):
+                memory.memory_table[data_type_for_memory] = copy.deepcopy(beexlSemantic.temp_memory.memory_table[data_type_for_memory])
+        else:
+            memory_location = memory.GetNewMemory(data_type_for_memory)
         t_value = data_type_for_memory + ":" + str(memory_location)
 
         f_scope = scope if scope == 'global' else beexlSemantic.current_scope
