@@ -7,7 +7,7 @@ from collections import defaultdict
 from beexlSemantic import *
 from VirtualMachine import VirtualMachine, virtualMachine
 from memoryManager import MemoryManager
-from beexerErrorListener import BeexlErrorListener
+from beexelErrorListener import BeexlErrorListener
 
 test_print = """
 filename create "beexl.png";
@@ -187,8 +187,7 @@ fun void song () {
     var control: int;
     upperLimit = 99;
     lowerLimit = 1;
-    var fun : int;
-    int = int + 1;
+
     control = 1;
     while ( upperLimit > lowerLimit ){
         row = vector ( upperLimit, upperLimit  );

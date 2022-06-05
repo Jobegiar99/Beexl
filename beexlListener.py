@@ -173,7 +173,7 @@ class beexlListener(ParseTreeListener):
 
     # Enter a parse tree produced by beexlParser#vars0.
     def enterVars0(self, ctx:beexlParser.Vars0Context):
-        var_info = ctx.getText()[2].split('var')[1].split(':')
+        var_info = ctx.getText().split('var')[1].split(':')
         var_name = var_info[0]
         var_type = beexlSemantic.type_map[var_info[1][:-1]]
         variable_data = beexlSemantic.getVariableInfo(var_name)
