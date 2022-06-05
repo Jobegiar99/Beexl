@@ -1,5 +1,6 @@
 from email.policy import default
 from antlr4 import *
+from numpy import array
 from beexlLexer import beexlLexer
 from beexlListener import beexlListener
 from beexlParser import beexlParser
@@ -34,6 +35,19 @@ var arr1[ 4 ]:int;
 var arr2[ 5 ]:int;
 var col:int;
 
+
+fun int findElement ( element:int ){
+    var index: int;
+    index = 0;
+    while ( index < 4){
+        if ( element == arr1[index] ){
+            return index;
+        }else{
+            index = index + 1;
+        }
+    }
+    return -1;
+}
 
 fun void sortArray ( ) {
     var i: int;
@@ -74,6 +88,7 @@ fun void main () {
         i = i + 1;
     }
     sortArray ();
+    print ( findElement ( 2 ) , findElement ( 1238 ) );
 }
 """
 
@@ -132,7 +147,7 @@ fun void main (){
 }
 """
 
-ameno = """
+test_beexl = """
 filename create "square.png";
 canvas 100,100 ;
 background rgba ( 0, 0 , 0 ,255);
@@ -222,40 +237,40 @@ fun void main (){
 
 """
 
+test_map = {
+    'fibbo':fibbo_fact_test,
+    'print':test_print,
+    'array':array_test,
+    'beexl':test_beexl
+}
+test = test_map[input()]
+lexer = beexlLexer(InputStream(test))
+stream = CommonTokenStream(lexer)
+parser = beexlParser(stream)
+parser.addErrorListener(BeexlErrorListener())
+tree = parser.fileconfig0()
+listener = beexlListener()
+ParseTreeWalker().walk(listener,tree)
 
-tests = [ameno]
-
-for test in tests:
-    lexer = beexlLexer(InputStream(test))
-    stream = CommonTokenStream(lexer)
-    parser = beexlParser(stream)
-    parser.addErrorListener(BeexlErrorListener())
-    tree = parser.fileconfig0()
-    listener = beexlListener()
-    ParseTreeWalker().walk(listener,tree)
-
-    coun = 0
-    with open("file.bxl",mode='w') as file:
-        line = ""
-        for quadruple in beexlSemantic.quadruples:
-            line+= " "
-            for element in quadruple:
-                counter = 15
-                for char in str(element):
-                    counter -= 1
-                    line += str(char)
-                while counter > 1:
-                    counter -= 1
-                    line += " "
+coun = 0
+with open("file.bxl",mode='w') as file:
+    line = ""
+    for quadruple in beexlSemantic.quadruples:
+        line+= " "
+        for element in quadruple:
+            counter = 15
+            for char in str(element):
+                counter -= 1
+                line += str(char)
+            while counter > 1:
+                counter -= 1
                 line += " "
-            line += "\n"
+            line += " "
+        line += "\n"
 
-            coun += 1
+        coun += 1
 
-        file.write(line)
+    file.write(line)
 
-    virtualMachine.SetMachine(beexlSemantic.quadruples)
-    virtualMachine.ReadQuadruples()
-    
-    # for key in memory.memory_table:
-    #    print(key,memory.memory_table[key])
+virtualMachine.SetMachine(beexlSemantic.quadruples)
+virtualMachine.ReadQuadruples()
