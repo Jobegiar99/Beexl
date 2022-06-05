@@ -4,7 +4,8 @@ from pickle import NONE
 from tkinter.font import names
 from collections import defaultdict
 from semanticCube import *
-from memoryManager import memory
+from memoryManager import MemoryManager, memory
+import copy
 
 class BeexlSemantic():
     
@@ -28,6 +29,7 @@ class BeexlSemantic():
         self.param_index = -1
         self.current_parameters = {}
         self.correct_print = True
+        self.temp_memory = MemoryManager()
         
 
     def getVariableInfo(self,name):
@@ -86,7 +88,11 @@ class BeexlSemantic():
 
     def linearExpressionOperatorHelper(self,operator,result):
         data_type = "temp_" + result
-        return "temp_"+result+":"+str(memory.GetNewMemory(data_type))     
+        new_memory = "temp_"+result+":"+str(self.temp_memory.GetNewMemory(data_type)) 
+
+        if memory.memory_table[data_type]['counter'] < self.temp_memory.memory_table[data_type]['counter']:
+            memory.memory_table[data_type] = copy.deepcopy(self.temp_memory.memory_table[data_type])
+        return new_memory
 
     def stopExecution(self,errorType):
         print(errorType)
@@ -132,7 +138,10 @@ class BeexlSemantic():
             return
 
         data_type = "local_" + data_type
-        data_memory = memory.GetNewMemory(data_type)
+        data_memory = self.temp_memory.GetNewMemory(data_type)
+        if memory.memory_table[data_type]['counter'] < self.temp_memory.memory_table[data_type]['counter']:
+            memory.memory_table[data_type] = copy.deepcopy(self.temp_memory.memory_table[data_type])
+
         self.addQuadruple(['=',self.current_scope,data_type + ":" + str(data_memory)])
         self.operandStack[self.operandDepth].append(data_type + ":" + str(data_memory))
         self.typeStack.append(data_type.split('_')[1])
