@@ -187,6 +187,9 @@ class VirtualMachine:
         if vector_x == None or vector_y == None or rgba_r == None or rgba_g == None or rgba_b == None or rgba_a == None:
             beexlSemantic.stopExecution("Error in fill")
 
+        if vector_x < 0 or vector_x >= beexlHelper.canvas.width or vector_y < 0 or vector_y >= beexlHelper.canvas.height:
+            beexlSemantic.stopExecution("Vector position out of range")
+            
         beexlHelper.fill((vector_x,vector_y),(rgba_r,rgba_g,rgba_b,rgba_a))
         self.stack[self.stackDepth][0] += 1
 
