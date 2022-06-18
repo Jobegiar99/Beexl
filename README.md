@@ -163,4 +163,4 @@ print ( 3 );
 If you want to know more about Beexl then check the [documentation here](https://docs.google.com/document/d/1XxfQl1E8LS0H9Gq30Hi9CTA_gnfen0_qnIqxe5_SkVE/edit?usp=sharing)
 
 ## 3. Video Tutorial
-A [video tutorial](https://drive.google.com/drive/folders/1ZlJpQWWbXlspeFnnvzQiuw5Ua5pxQJ8M?usp=sharing)  of how to run and make programs in Beexl.
+A [video tutorial](https://drive.google.com/drive/folders/1ZlJpQWWbXlspeFnnvzQiuw5Ua5pxQJ8M?usp=sharing)  of how to run and make programs in Beexl. There were audio issues while recording it. Will update it soon.
